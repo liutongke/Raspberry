@@ -153,3 +153,16 @@ su root                     #测试是否生效
 重新锁定root账户可执行命令：sudo passwd --lock root
 
 ![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/202304151759701.png)
+
+# 树莓派开机发送邮件
+
+```
+sudo vi /etc/rc.local
+```
+在`exit0`前添加python开机需要执行的脚本`SendToEmailLocalIp.py`
+
+```sh
+sudo python /var/www/SendToEmailLocalIp.py
+```
+
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/202304152219390.png)
