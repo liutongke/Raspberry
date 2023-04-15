@@ -1,8 +1,17 @@
-# 树莓派（Raspberry Pi）
+# 树莓派（Raspberry Pi）学习资料总结
 >前言：写这份总结目的是树莓派吃灰几年一直运行docker在家当作开发测试的数据库使用，导致之前买的硬件都没有得到充分的利用，再加上以前零零碎碎写的资料不完整、包括开发的Python脚本丢失，比如小车的L298N电机驱动板之前踩过不少坑当时也没能留下资料，包括接线图也没保存。所以决定对这些资料进行重新总结汇总，以便以后查看，以下内容均基于树莓派3b（Raspberry Pi 3b）。
 
-树莓派（Raspberry Pi）学习资料总结
 **系统版本：Raspberry Pi OS 64 位（Raspbian）**
+
+# Go编译树莓派运行程序
+
+```sh
+SET CGO_ENABLED=0
+SET GOOS=linux
+SET GOARCH=arm64
+SET GOARM=7
+go build -o tinypng main.go Tinypng.go
+```
 
 # windwos11系统使用PyCharm开发GPIO
 
