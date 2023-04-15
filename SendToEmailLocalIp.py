@@ -36,7 +36,7 @@ if myAddrIp:
 
     # 构造邮件内容
     msg = MIMEText(myAddrIp, 'plain', 'utf-8')
-    msg["Subject"] = "树莓派的ip地址:" + myAddrIp + "日期:" + dataId
+    msg["Subject"] = "树莓派的ip地址: " + myAddrIp + " 日期: " + dataId
     msg["From"] = mail_sender  # 发送人
     to_receiver = ['']  # 收件人邮箱,多个人就是要list
     cc_reciver = ['']  # 抄送邮箱,可以不写
