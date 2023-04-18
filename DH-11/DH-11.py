@@ -21,52 +21,52 @@ def delayMicrosecond(t):  # 微秒级延时函数
 
 tmp = []  # 用来存放读取到的数据
 
-data = 21  # DHT11的data引脚连接到的树莓派的GPIO引脚，使用BCM编号
+GPIO_DATA = 21  # DHT11的data引脚连接到的树莓派的GPIO引脚，使用BCM编号
 
 a, b = 0, 0
 
 
 def DHT11():
-    GPIO.setup(data, GPIO.OUT)  # 设置GPIO口为输出模式
-    GPIO.output(data, GPIO.HIGH)  # 设置GPIO输出高电平
+    GPIO.setup(GPIO_DATA, GPIO.OUT)  # 设置GPIO口为输出模式
+    GPIO.output(GPIO_DATA, GPIO.HIGH)  # 设置GPIO输出高电平
     delayMicrosecond(10 * 1000)  # 延时10毫秒
-    GPIO.output(data, GPIO.LOW)  # 设置GPIO输出低电平
+    GPIO.output(GPIO_DATA, GPIO.LOW)  # 设置GPIO输出低电平
     delayMicrosecond(25 * 1000)  # 延时25毫秒
-    GPIO.output(data, GPIO.HIGH)  # 设置GPIO输出高电平
-    GPIO.setup(data, GPIO.IN)  # 设置GPIO口为输入模式
+    GPIO.output(GPIO_DATA, GPIO.HIGH)  # 设置GPIO输出高电平
+    GPIO.setup(GPIO_DATA, GPIO.IN)  # 设置GPIO口为输入模式
 
     a = time.time()  # 记录循环开始时间
-    while GPIO.input(data):  # 一直循环至输入为低电平
+    while GPIO.input(GPIO_DATA):  # 一直循环至输入为低电平
         b = time.time()  # 记录结束时间
         if (b - a) > 0.1:  # 判断循环时间是否超过0.1秒，避免程序进入死循环卡死
             break  # 跳出循环
 
     a = time.time()
-    while GPIO.input(data) == 0:  # 一直循环至输入为高电平
+    while GPIO.input(GPIO_DATA) == 0:  # 一直循环至输入为高电平
         b = time.time()
         if (b - a) > 0.1:
             break
 
     a = time.time()
-    while GPIO.input(data):  # 一直循环至输入为低电平
+    while GPIO.input(GPIO_DATA):  # 一直循环至输入为低电平
         b = time.time()
         if (b - a) >= 0.1:
             break
 
     for i in range(40):  # 循环40次，接收温湿度数据
         a = time.time()
-        while GPIO.input(data) == 0:  # 一直循环至输入为高电平
+        while GPIO.input(GPIO_DATA) == 0:  # 一直循环至输入为高电平
             b = time.time()
             if (b - a) > 0.1:
                 break
 
         delayMicrosecond(28)  # 延时28微秒
 
-        if GPIO.input(data):  # 超过28微秒后判断是否还处于高电平
+        if GPIO.input(GPIO_DATA):  # 超过28微秒后判断是否还处于高电平
             tmp.append(1)  # 记录接收到的bit为1
 
             a = time.time()
-            while GPIO.input(data):  # 一直循环至输入为低电平
+            while GPIO.input(GPIO_DATA):  # 一直循环至输入为低电平
                 b = time.time()
                 if (b - a) > 0.1:
                     break
