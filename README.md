@@ -141,7 +141,13 @@ sudo docker run -d -p 10000:9000 --name portainer --restart always -v /var/run/d
 
 ```
 
-
+# 安装php、nginx、MySQL、Redis
+```
+docker run --name mysql-v1 -p 3306:3306 -v /var/www/MySQL/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=xCl5QUb9ES2YfkvX -d mysql:8.0
+docker run --name nginx1 --restart always -p 80:80 -v /var/www/html:/usr/share/nginx/html -v /var/www/nginx:/etc/nginx/conf.d -d nginx
+docker run --name php1 --restart always -p 9000:9000 -v /var/www/html:/var/www/html -d php:8.1.18-fpm
+docker run -d --name redis-1 --restart always -p 6379:6379 redis
+```
 
 # 树莓派root登陆：
 
@@ -165,4 +171,63 @@ sudo vi /etc/rc.local
 sudo python /var/www/SendToEmailLocalIp.py
 ```
 
-![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/202304152219390.png)
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/202304161546925.png)
+
+# 通过docker搭建PHP8.1+nginx搭建环境
+
+```
+docker run --name nginx1 -p 8080:80 -v /var/www/html:/usr/share/nginx/html -v /var/www/nginx:/etc/nginx/conf.d -d nginx #安装nginx
+
+docker run --name php1 -p 9000:9000 -v /var/www/html:/var/www/html -d php:8.1.18-fpm    #安装PHP
+```
+
+nginx中配置文件目录
+
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230416211427.png)
+
+nginx.conf配置
+```
+server {
+    listen       80;
+    listen  [::]:80;
+    server_name  localhost;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    location ~ \.php$ {
+        root /var/www/html/;#增加PHP服务器的目录
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass 192.168.1.107:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+}
+
+```
+
+# syncthing
+
+[syncthing下载地址](https://syncthing.net/downloads/)
+
+配置文件目录
+/home/keke/.config/syncthing/config.xml
+
+修改访问权限
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230417125121.png)
+
+启动软件
+/home/keke/syncthing/syncthing
+
+```
+#! /bin/bash
+/home/keke/syncthing/syncthing
+```
