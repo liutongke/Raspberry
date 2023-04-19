@@ -108,10 +108,10 @@ try:
 
         if check == check_tmp and temperature != 0 and temperature != 0:  # 判断数据是否正常
             print("温度:", temperature, "℃   湿度:", humidity, "%")  # 打印温湿度数据
+            time.sleep(10)
         else:
             print("error")
 
-        time.sleep(1)
         GPIO.cleanup()
 except KeyboardInterrupt:
     print("拜拜")

@@ -136,17 +136,19 @@ sudo systemctl start docker
 sudo docker pull portainer/portainer
 #创建 portainer 容器
 sudo docker volume create portainer_data
-#运行 portainer
-sudo docker run -d -p 10000:9000 --name portainer --restart always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer
+
 
 ```
 
 # 安装php、nginx、MySQL、Redis
 ```
-docker run --name mysql-v1 -p 3306:3306 -v /var/www/MySQL/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=xCl5QUb9ES2YfkvX -d mysql:8.0
+docker run --name mysql-v1 -p 3306:3306 --restart always -v /var/www/MySQL/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=xCl5QUb9ES2YfkvX -d mysql:8.0
 docker run --name nginx1 --restart always -p 80:80 -v /var/www/html:/usr/share/nginx/html -v /var/www/nginx:/etc/nginx/conf.d -d nginx
 docker run --name php1 --restart always -p 9000:9000 -v /var/www/html:/var/www/html -d php:8.1.18-fpm
 docker run -d --name redis-1 --restart always -p 6379:6379 redis
+
+#运行 portainer
+sudo docker run -d -p 10000:9000 --name portainer --restart always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer
 ```
 
 # 树莓派root登陆：
