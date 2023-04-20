@@ -21,7 +21,7 @@ def delayMicrosecond(t):  # 微秒级延时函数
 
 tmp = []  # 用来存放读取到的数据
 
-GPIO_DATA = 21  # DHT11的data引脚连接到的树莓派的GPIO引脚，使用BCM编号
+GPIO_DATA = 18  # DHT11的data引脚连接到的树莓派的GPIO引脚，使用BCM编号
 
 a, b = 0, 0
 

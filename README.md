@@ -233,3 +233,15 @@ server {
 #! /bin/bash
 /home/keke/syncthing/syncthing
 ```
+
+
+# PLC编程上升沿与下降沿
+上升沿就是从0变成1中间的过程。
+
+下降沿就是从1变成0中间的过程。
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230420180040.png)
+
+
+结论：上升沿：常开到闭合触发的瞬间执行！
+
+下降沿：常闭到断开的瞬间执行。上升沿就像点动启动按钮，下降沿就像点动停止按钮!
