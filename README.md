@@ -220,18 +220,59 @@ server {
 
 [syncthing下载地址](https://syncthing.net/downloads/)
 
-配置文件目录
+第一步：切入到syncthing项目，执行命令启动下软件
+第二步：配置文件目录修改访问权限，可以非本机用户访问
 /home/keke/.config/syncthing/config.xml
 
 修改访问权限
 ![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230417125121.png)
 
-启动软件
+第三步：启动软件
 /home/keke/syncthing/syncthing
 
 ```
 #! /bin/bash
 /home/keke/syncthing/syncthing
+```
+
+访问地址：
+`http://user ip:8384/`
+
+# 安装Supervisord并且开机启动syncthing
+
+## 安装Supervisord
+Raspberry Pi OS 64 位系统下：`sudo apt-get install supervisor`，通过这种方式安装后，系统自动设置为开机启动。
+
+## 配置Supervisord
+
+Syncthing文档[Using Supervisord](https://docs.syncthing.net/users/autostart.html?highlight=home#using-supervisord) 地址
+
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230421131519.png)
+
+`/etc/supervisor/conf.d`目录中创建`syncthing.conf`配置文件，配置参考如下：
+
+```conf
+[program:syncthing] ; 程序名称，在 supervisorctl 中通过这个值来对程序进行一系列的操作
+autorestart=True      ; 程序异常退出后自动重启
+autostart=True        ; 在 supervisord 启动的时候也自动启动
+redirect_stderr=True  ; 把 stderr 重定向到 stdout，默认 false
+environment=STNORESTART="1", HOME="/home/keke"  ; 可以通过 environment 来添加需要的环境变量，一种常见的用法是使用指定的 virtualenv 环境
+command=/home/keke/syncthing/syncthing --no-browser --home="/home/keke/.config/syncthing" ; 启动命令，与手动在命令行启动的命令是一样的
+user=keke           ; 用哪个用户启动
+directory=/home/keke/syncthing/  ; 程序的启动目录
+stdout_logfile_maxbytes = 20MB  ; stdout 日志文件大小，默认 50MB
+stdout_logfile_backups = 20     ; stdout 日志文件备份数
+; stdout 日志文件，需要注意当指定目录不存在时无法正常启动，所以需要手动创建目录（supervisord 会自动创建日志文件）
+stdout_logfile = /home/keke/log/usercenter_stdout.log
+```
+
+## supervisorctl常用操作命令
+
+```sh
+supervisorctl reload            #重启Supervisord
+supervisorctl start syncthing   #启动Supervisord
+supervisorctl status syncthing  #检查Supervisord状态
+supervisorctl tail syncthing    #检查Supervisord日志
 ```
 
 
@@ -245,3 +286,4 @@ server {
 结论：上升沿：常开到闭合触发的瞬间执行！
 
 下降沿：常闭到断开的瞬间执行。上升沿就像点动启动按钮，下降沿就像点动停止按钮!
+
