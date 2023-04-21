@@ -1,0 +1,1 @@
+sources.list、raspi.list已经更换国内源配置，直接复制进系统更新即可，具体可参考README.md树莓派更换国内源主题操作
