@@ -1,5 +1,5 @@
 # 树莓派（Raspberry Pi）学习资料总结
->前言：写这份总结目的是树莓派吃灰几年一直运行docker在家当作开发测试的数据库使用，导致之前买的硬件都没有得到充分的利用，再加上以前零零碎碎写的资料不完整、包括开发的Python脚本丢失，比如小车的L298N电机驱动板之前踩过不少坑当时也没能留下资料，包括接线图也没保存。所以决定对这些资料进行重新总结汇总，以便以后查看，以下内容均基于树莓派3b（Raspberry Pi 3b）。
+>前言：写这份总结目的是树莓派吃灰几年一直运行docker在家当作开发测试的数据库使用，导致之前买的硬件都没有得到充分的利用，再加上以前零零碎碎写的资料不完整、包括开发的Python脚本丢失，比如小车的L298N电机驱动板之前踩过不少坑当时也没能留下资料，包括接线图也没保存。所以决定对这些资料进行重新整理总结汇总，以便以后查看，以下内容均基于树莓派3b（Raspberry Pi 3b）。
 
 **系统版本：Raspberry Pi OS 64 位（Raspbian）**
 
@@ -58,7 +58,7 @@ priority=1
 
 根据 Raspberry Pi OS Bullseye 的4月更新说明，经典的 pi 用户名和 raspberry 已经被取消，用户想要使用树莓派通过HDMI连接显示器设置初始化。
 
-# 树莓派更换国内清华源
+# 树莓派更换国内源
 
 树莓派的所有软件源地址：https://www.raspbian.org/RaspbianMirrors
 
@@ -141,15 +141,34 @@ sudo docker volume create portainer_data
 ```
 
 # 安装php、nginx、MySQL、Redis
-```
-docker run --name mysql-v1 -p 3306:3306 --restart always -v /var/www/MySQL/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=xCl5QUb9ES2YfkvX -d mysql:8.0
-docker run --name nginx1 --restart always -p 80:80 -v /var/www/html:/usr/share/nginx/html -v /var/www/nginx:/etc/nginx/conf.d -d nginx
-docker run --name php1 --restart always -p 9000:9000 -v /var/www/html:/var/www/html -d php:8.1.18-fpm
-docker run -d --name redis-1 --restart always -p 6379:6379 redis
+```sh
+sudo docker run --name mysql-v1 -p 3306:3306 --restart always -v /var/www/MySQL/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=xCl5QUb9ES2YfkvX -d mysql:8.0
+sudo docker run --name nginx1 --restart always -p 80:80 -v /var/www/html:/usr/share/nginx/html -v /var/www/nginx:/etc/nginx/conf.d -d nginx
+sudo docker run --name php1 --restart always -p 9000:9000 -v /var/www/html:/var/www/html -d php:8.1.18-fpm
+sudo docker run -d --name redis-1 --restart always -p 6379:6379 redis
 
 #运行 portainer
 sudo docker run -d -p 10000:9000 --name portainer --restart always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer
 ```
+
+# 安装pi-dashboard
+
+https://github.com/nxez/pi-dashboard
+
+```
+#创建bridge网络
+docker network create pi-dashboard-net 
+
+#创建nginx
+sudo docker run --name nginx1 --network pi-dashboard-net --network-alias pi-dashboard-nginx --restart always -p 80:80 -v /var/www/html:/usr/share/nginx/html -v /var/www/nginx:/etc/nginx/conf.d -d nginx
+#创建php
+sudo docker run --name php1 --network pi-dashboard-net --network-alias pi-dashboard-php --restart always -p 9000:9000 -v /var/www/html:/var/www/html -d php:8.1.18-fpm
+
+#将nginx移除mynet局域网络
+docker network disconnect 创建的bridge 对应的network-alias
+
+```
+
 
 # 树莓派root登陆：
 
@@ -241,9 +260,29 @@ server {
 # 安装Supervisord并且开机启动syncthing
 
 ## 安装Supervisord
-Raspberry Pi OS 64 位系统下：`sudo apt-get install supervisor`，通过这种方式安装后，系统自动设置为开机启动。
+- [x] **apt-get安装方式：** Raspberry Pi OS 64 位系统下：`sudo apt-get install supervisor`，通过这种方式安装后，系统自动设置为开机启动。**此种安装方法会变更系统的python3绑定软连接******
+- [x] **pip安装方式（推荐）：** Raspberry Pi OS 64 位系统下，桌面版有pip，lite版本没有pip需要自己安装
 
-## 配置Supervisord
+1. pip安装supervisor
+```
+sudo pip install  supervisor
+```
+2. 创建文件夹并上传配置文件到对应的文件夹，配置文件也可以通过命令行生成
+/etc/supervisor
+/etc/supervisor/conf.d
+
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230421173449.png)
+
+
+3. 启动supervisord
+```
+sudo supervisord -c /etc/supervisor/supervisord.conf
+```
+4. 设置开机自启动supervisord
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230421173241.png)
+
+
+## Supervisord配置Syncthing
 
 Syncthing文档[Using Supervisord](https://docs.syncthing.net/users/autostart.html?highlight=home#using-supervisord) 地址
 
@@ -287,3 +326,12 @@ supervisorctl tail syncthing    #检查Supervisord日志
 
 下降沿：常闭到断开的瞬间执行。上升沿就像点动启动按钮，下降沿就像点动停止按钮!
 
+# 挂载NTFS磁盘
+![磁盘被程序占用](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230421200255.png)
+
+```
+sudo apt-get install ntfs-3g            #下载支持的依赖
+sudo fdisk -l                           #查看磁盘信息
+sudo fuser -m /dev/sda1                 #查看占用的进程（磁盘被程序占用）
+sudo mount /dev/sda1 /home/keke/disk1/  #挂载磁盘
+```
