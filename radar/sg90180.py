@@ -13,6 +13,7 @@ import HCSR04
 
 GPIO_SG = 18
 gpio.setmode(gpio.BCM)
+gpio.setwarnings(False)
 gpio.setup(GPIO_SG, gpio.OUT)
 SG90_PWM = gpio.PWM(GPIO_SG, 50)
 SG90_PWM.start(0)
@@ -28,18 +29,18 @@ def sg90_turn(data):
         SG90_PWM.ChangeDutyCycle(2.5 + data * 10 / 180)
 
 
-def incr():
-    for i in range(0, 190, 10):
-        sg90_turn(i)
-        print("Measured Distance = {:.2f} cm".format(HCSR04.launch()))
-        time.sleep(0.5)
+def incr(i):
+    # for i in range(0, 190, 10):
+    sg90_turn(i)
+    # print("Measured Distance = {:.2f} cm".format(HCSR04.launch()))
+    return HCSR04.launch()
 
 
-def decr():
-    for i in range(180, -10, -10):
-        sg90_turn(i)
-        print("Measured Distance = {:.2f} cm".format(HCSR04.launch()))
-        time.sleep(0.5)
+def decr(i):
+    # for i in range(180, -10, -10):
+    sg90_turn(i)
+    # print("Measured Distance = {:.2f} cm".format(HCSR04.launch()))
+    return HCSR04.launch()
 
 
 def clear():

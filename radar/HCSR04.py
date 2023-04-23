@@ -10,6 +10,7 @@
 # 导入 GPIO库
 import RPi.GPIO as GPIO
 import time
+import Tools
 
 # 设置 GPIO 模式为 BCM
 GPIO.setmode(GPIO.BCM)
@@ -51,4 +52,4 @@ def launch():
     # 计算超声波的往返时间 = 时刻2 - 时刻1
     time_elapsed = stop_time - start_time
     # 声波的速度为 343m/s， 转化为 34300cm/s
-    return (time_elapsed * 34300) / 2
+    return Tools.float_str(((time_elapsed * 34300) / 2))
