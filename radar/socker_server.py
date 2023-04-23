@@ -41,7 +41,7 @@ import radar
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 address = ('0.0.0.0', 8001)
 server_socket.bind(address)  # 为服务器绑定一个固定的地址，ip和端口
-# server_socket.settimeout(10)  # 设置一个时间提示，如果10秒钟没接到数据进行提示
+server_socket.settimeout(60)  # 设置一个时间提示，如果10秒钟没接到数据进行提示
 
 while True:
     # 正常情况下接收数据并且显示，如果10秒钟没有接收数据进行提示（打印 "time out"）
@@ -60,5 +60,6 @@ while True:
         d = Tools.json_decode(receive_data)
         print(d)
         radar.radar(d['theta_arr'], d['r'])
-    except KeyboardInterrupt:  # 如果10秒钟没有接收数据进行提示（打印 "time out"）
+    except socket.timeout:
         print("tme out")
+        exit()

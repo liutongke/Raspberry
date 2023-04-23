@@ -15,11 +15,10 @@ import matplotlib.pyplot as plt
 
 # https://zhuanlan.zhihu.com/p/37104717
 # https://blog.csdn.net/qq_43511299/article/details/113781883
-# https://www.bilibili.com/bangumi/play/ep50790?spm_id_from=333.337.0.0&from_spmid=666.25.player.continue
 def radar(theta_arr, r):
     plt.clf()  # 清除上一幅图像
-    plt.polar(np.array(theta_arr) * np.pi, r, marker='.', ms=2, mfc='r', mec='r',
-              color='r', ls='-', lw=0.5)
+    plt.polar(np.array(theta_arr) * np.pi, r, marker='.', ms=10, mfc='r', mec='r',
+              color='r', ls='None', lw=0.5)
     plt.ylim(0, 200)  # 设置极轴的上下限
     plt.pause(0.1)  # 暂停1秒
     plt.ioff()  # 关闭画图的窗口
