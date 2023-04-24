@@ -14,10 +14,13 @@ import matplotlib.pyplot as plt
 
 # https://zhuanlan.zhihu.com/p/37104717
 # https://blog.csdn.net/qq_43511299/article/details/113781883
-def radar(theta_arr, r):
+# https://geek-docs.com/matplotlib/matplotlib-pyplot/matplotlib-pyplot-thetagrids-in-python.html
+def radar(theta_arr, r, angle):
     plt.clf()  # 清除上一幅图像
-    plt.polar(np.array(theta_arr) * np.pi, r, marker='.', ms=10, mfc='r', mec='r',
-              color='r', ls='None', lw=0.5)
+    plt.polar(np.array(theta_arr) * np.pi, r, marker='.', ms=1, mfc='r', mec='r',
+              color='r', ls='None', lw=0.5)  # 雷达探测点
+
+    plt.plot([0, angle * np.pi], [0, 100], color='#B0B0B0', marker='+', linestyle='-')  # 雷达扫描线
     plt.ylim(0, 100)  # 设置极轴的上下限
     plt.pause(0.1)  # 暂停1秒
     plt.ioff()  # 关闭画图的窗口

@@ -14,7 +14,7 @@ import radar
 
 ip = '0.0.0.0'
 port = 8001
-ttl = 60
+ttl = 10
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 address = (ip, port)
@@ -24,10 +24,10 @@ server_socket.settimeout(ttl)  # 设置一个时间提示，如果10秒钟没接
 while True:
     try:
         now = time.time()  # 获取当前时间
-        receive_data, client = server_socket.recvfrom(2024)
+        receive_data, client = server_socket.recvfrom(9000)
         print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(now)))  # 以指定格式显示时间
         d = Tools.json_decode(receive_data)
-        radar.radar(d['theta_arr'], d['r'])
+        radar.radar(d['theta_arr'], d['r'], d['angle'])
     except socket.timeout:
         print("tme out")
         exit()

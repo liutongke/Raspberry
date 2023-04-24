@@ -23,6 +23,7 @@ class Leida:
     dict_ = {
         'theta_arr': [],
         'r': [],
+        'angle': '',
     }
 
     def __init__(self):
@@ -41,12 +42,13 @@ class Leida:
             theta_arr.append(Tools.angle_conversion(n))
             sg.sg90_turn(n)
             distance = HCSR04.launch()
-            r.append(100 if distance >= 100 else distance)
+            r.append(300 if distance >= 100 else distance)
             self.dict_['theta_arr'] = theta_arr
             self.dict_['r'] = r
+            self.dict_['angle'] = Tools.angle_conversion(n)
             str2 = Tools.json_encode(self.dict_)
             self.send(str2)
-            time.sleep(0.5)
+            time.sleep(0.1)
 
 
 if __name__ == '__main__':
@@ -54,8 +56,8 @@ if __name__ == '__main__':
     print("归零")
     time.sleep(1)
 
-    Leida().sg_turn(0, 190, 10)
-    Leida().sg_turn(180, -10, -10)
+    Leida().sg_turn(0, 180, 1)
+    Leida().sg_turn(180, 0, -1)
 
     sg.sg90_turn('stop')
     time.sleep(1)
