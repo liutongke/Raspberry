@@ -24,11 +24,6 @@ GPIO.setup(GPIO_TRIGGER, GPIO.OUT)
 GPIO.setup(GPIO_ECHO, GPIO.IN)
 
 
-def __init__(self, value, fvalue):
-    self.i = value
-    self.fv = fvalue
-
-
 # 获取距离
 def launch():
     # 发送高电平信号到 Trig 引脚

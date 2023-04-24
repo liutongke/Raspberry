@@ -10,7 +10,7 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setup(14, GPIO.OUT)
 # 循环十次结束闪烁
 count = 0
-while (count < 3):
+while count < 3:
     # 设置闪烁的函数
     # 输出1
     GPIO.output(14, GPIO.HIGH)
@@ -18,7 +18,7 @@ while (count < 3):
     # 输出0
     GPIO.output(14, GPIO.LOW)
     time.sleep(5)
-    count = count + 1
+    count += 1
 # 循环结束设置长亮状态
 # GPIO.output(14, GPIO.HIGH)
 # 清除进程

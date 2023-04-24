@@ -86,12 +86,12 @@ def ranging():
     GPIO.output(TRIG, GPIO.LOW)
 
     # 等待低电平结束，然后记录时间。
-    while (GPIO.input(ECHO) == 0):
+    while GPIO.input(ECHO) == 0:
         pass
     pulse_start = time.time()
 
     # 等待高电平结束，然后记录时间。
-    while (GPIO.input(ECHO) == 1):
+    while GPIO.input(ECHO) == 1:
         pass
     pulse_end = time.time()
 

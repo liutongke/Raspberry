@@ -7,6 +7,7 @@
 @version：Python 3.11.2
 @title: DH-11温湿度
 """
+import datetime
 import RPi.GPIO as GPIO
 import time
 
@@ -107,7 +108,8 @@ try:
         check_tmp = humidity_int + humidity_point + temperature_int + temperature_point
 
         if check == check_tmp and temperature != 0 and temperature != 0:  # 判断数据是否正常
-            print("温度:", temperature, "℃   湿度:", humidity, "%")  # 打印温湿度数据
+            tm = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            print(tm, "温度:", temperature, "℃   湿度:", humidity, "%")  # 打印温湿度数据
             time.sleep(10)
         else:
             print("error")

@@ -2,22 +2,21 @@
 
 import RPi.GPIO as GPIO
 import time
-import signal
 import atexit
 
 atexit.register(GPIO.cleanup)
 
-servopin=21
+servopin = 21
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(servopin,GPIO.OUT,initial=False)
-p=GPIO.PWM(servopin,50)
+GPIO.setup(servopin, GPIO.OUT, initial=False)
+p = GPIO.PWM(servopin, 50)
 p.start(0)
 time.sleep(2)
 
 while True:
-   for i in range(0,360,10):
-       p.ChangeDutyCycle(12.5-5*i/360)
-       time.sleep(1)
-   for i in  range(0,360,10):
-        p.ChangeDutyCycle(7.5-5*i/360)
+    for i in range(0, 360, 10):
+        p.ChangeDutyCycle(12.5 - 5 * i / 360)
+        time.sleep(1)
+    for i in range(0, 360, 10):
+        p.ChangeDutyCycle(7.5 - 5 * i / 360)
         time.sleep(1)

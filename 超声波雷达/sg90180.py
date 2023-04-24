@@ -8,8 +8,6 @@
 @title: sg90 180°舵机
 """
 import RPi.GPIO as gpio
-import time
-import HCSR04
 
 GPIO_SG = 18
 gpio.setmode(gpio.BCM)
@@ -29,33 +27,7 @@ def sg90_turn(data):
         SG90_PWM.ChangeDutyCycle(2.5 + data * 10 / 180)
 
 
-def incr(i):
-    # for i in range(0, 190, 10):
-    sg90_turn(i)
-    # print("Measured Distance = {:.2f} cm".format(HCSR04.launch()))
-    return HCSR04.launch()
-
-
-def decr(i):
-    # for i in range(180, -10, -10):
-    sg90_turn(i)
-    # print("Measured Distance = {:.2f} cm".format(HCSR04.launch()))
-    return HCSR04.launch()
-
-
 def clear():
+    sg90_turn(0)  # 归零
     SG90_PWM.stop()  # 关闭该引脚的 PWM
     gpio.cleanup()  # 清理 在退出时使用
-# if __name__ == '__main__':
-#     sg90_turn(0)
-#     print("归零")
-#     time.sleep(1)
-#     incr()
-#     decr()
-#
-#     sg90_turn('stop')
-#     time.sleep(1)
-#
-#     SG90_PWM.stop()  # 关闭该引脚的 PWM
-#     gpio.cleanup()  # 清理 在退出时使用
-#     print("bye bye")
