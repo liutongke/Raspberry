@@ -335,3 +335,158 @@ sudo fdisk -l                           #查看磁盘信息
 sudo fuser -m /dev/sda1                 #查看占用的进程（磁盘被程序占用）
 sudo mount /dev/sda1 /home/keke/disk1/  #挂载磁盘
 ```
+
+# docker安装nginx、rtmp实现推流
+
+- 容器= 进程， 有且仅有一个前台能持续运行的进程
+- nginx 默认是后台守护进程的形式运行， nginx -g "daemon off;" 以前台形式持续运行。
+
+分别将`nginx-1.24.0.tar.gz`、`nginx-rtmp-module-master.zip`、`nginx.conf`、`Dockerfile`上传到目录中，[下载VLC播放器](https://www.videolan.org/vlc/index.zh_CN.html)、PotPlayer
+
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230426124348.png)
+```
+#构建镜像
+docker build -t nginx/rtmp .
+#构建容器
+docker run -itd --name os1 -p 9500:80 -p 1935:1935 -v /var/www/rtmp/nginx.conf:/usr/local/nginx/conf/nginx.conf --restart=always nginx/rtmp
+#推流测试
+ffmpeg -re -i test.mp4 -c copy -f flv rtmp://192.168.1.107:1935/live
+```
+![VLC播放器](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230426124615.png)
+
+Dockerfile文件内容：
+```sh
+FROM debian:stable
+EXPOSE 1935
+EXPOSE 80
+RUN  sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+RUN  apt-get update
+RUN  apt-get install build-essential libpcre3 libpcre3-dev libssl-dev unzip -y
+#RUN wget http://nginx.org/download/nginx-1.24.0.tar.gz
+#RUN wget https://github.com/arut/nginx-rtmp-module/archive/master.zip
+ADD nginx-1.24.0.tar.gz /usr/local/src
+ADD nginx-rtmp-module-master.zip  /usr/local/src
+WORKDIR /usr/local/src
+RUN unzip nginx-rtmp-module-master.zip
+WORKDIR /usr/local/src
+WORKDIR nginx-1.24.0
+RUN ./configure \
+    --without-http_gzip_module\
+    --with-http_ssl_module \
+    --add-module=/usr/local/src/nginx-rtmp-module-master && make && make install
+
+WORKDIR /usr/local/nginx/sbin
+CMD ["./nginx","-g","daemon off;"]
+```
+
+查看摄像头
+```
+ls /dev/video*
+```
+
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230427151415.png)
+
+
+推流树莓派sci摄像头
+```
+#推流本地视频
+ffmpeg -re -i test.mp4 -c copy -f flv rtmp://192.168.1.107:1935/live
+
+#推流摄像头
+ffmpeg -f video4linux2 -i /dev/video0 -f flv rtmp://192.168.1.107:1935/live
+
+ffmpeg -i /dev/video0 -s 640x360 -vcodec libx264 -max_delay 100 -r 20 -b:v 1000k -b:a 128k -f flv rtmp://192.168.1.107:1935/live
+
+ffmpeg -f video4linux2 -framerate 30 -video_size 320x240 -i /dev/video0 -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -video_size 320x240 -threads 0 -f flv rtmp://192.168.1.107:1935/live
+
+#保存推流视频
+ffmpeg -i rtmp://192.168.1.107:1935/live -c copy 文件名.flv
+```
+
+Streaming Video 直播视频
+树莓派输入：
+```
+libcamera-vid -t 0 --inline --listen -o tcp://0.0.0.0:8888
+```
+播放器输入
+```
+tcp/h264://树莓派地址:8888
+
+```
+
+```
+vcgencmd get_camera
+```
+**supported = 1 detected = 0
+supported = 0未开启摄像头
+detected = 0 表明没有接入摄像头设备**
+设置新版摄像头的话detected就为0无法使用ffmpeg推流
+
+# 新版系统设置摄像头
+
+调用`libcamera`命令拍照出现`ERROR: the system appears to be configured for the legacy camera stack
+`报错，这是由于在最新的树莓派系统中已经从基于专有 Broadcom GPU 代码的传统相机软件堆栈过渡到基于libcamera的开源堆栈，也就说未来会使用libcamera来替代。libcamera是一个旨在直接从Linux操作系统支持复杂的相机系统的软件库。对于Raspberry Pi，它使我们能够直接从在ARM处理器上运行的开源代码驱动相机系统。
+
+### 解决方法
+
+在`/boot/config.txt`文件中添加`dtoverlay`字段
+
+![根据摄像头配置](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230427121348.png)
+
+#### [dtoverlay字段与摄像头对照表](https://www.raspberrypi.com/documentation/computers/camera_software.html)：如下
+
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230427121445.png)
+查看PCF8591器件的地址(硬件地址 由器件决定) 
+
+
+保存视频十秒钟的视频
+```
+libcamera-vid -t 10000 -o test.h264
+```
+
+拍摄照片
+```
+libcamera-jpeg -o test.jpg
+```
+
+# 使用Picamera2拍照
+[Picamera2 手册中](https://datasheets.raspberrypi.com/camera/picamera2-manual.pdf)
+[Python 绑定libcamera](https://www.raspberrypi.com/documentation/computers/camera_software.html#python-bindings-for-libcamera)
+#### 快速拍照并保存，不需要预览
+```
+from picamera2 import Picamera2, Preview
+picam2 = Picamera2()
+camera_config = picam2.create_preview_configuration()
+picam2.configure(camera_config)
+picam2.start()
+picam2.capture_file("test.jpg")
+```
+
+#### 快速录制视频并保存，不需要预览
+```
+from picamera2 import Picamera2
+picam2 = Picamera2()
+picam2.start_and_record_video("test.mp4", duration=5) #视频格式mp4,长度5秒
+```
+
+
+# [调整swap分区大小](https://www.cnblogs.com/varden/p/15409542.html)
+
+sudo i2cdetect -y 1
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230425180032.png)
+
+# [SSD1306.py 函数](https://pypi.org/project/micropython-ssd1306py/)
+
+1. text(string, x, y)，在(x, y)处显示字符串，注意text()函数内置的字体是8x8的，暂时不能替换
+1. poweroff()，关闭OLED显示
+1. poweron()，空函数，无任何效果。可以用 write_cmd(0xAF) 代替
+1. fill(n)，n=0，清空屏幕，n大于0，填充屏幕
+1. contrast()，调整亮度。0最暗，255最亮
+1. invert()，奇数时反相显示，偶数时正常显示
+1. pixel(x, y, c)，在(x, y)处画点
+1. show()，更新显示内容。前面大部分函数只是写入数据到缓冲区，并不会直接显示到屏幕，需要调用show()后才能显示出来。
+1. framebuf.line(x1,y1,x2,y2,c)，画直线
+1. framebuf.hline(x,y,w,c)，画水平直线
+1. framebuf.vline(x,y,w,c)，画垂直直线
+1. framebuf.fill_rect(x,y,w,h,c)，画填充矩形
+1. framebuf.rect(x,y,w,h,c)，画空心矩形

@@ -2,3 +2,7 @@
 /树莓派系统写入工具
 /.idea
 /gpio
+/Pico/.vscode
+/Pico/.idea
+/gpio
+/超声波雷达/__pycache__
