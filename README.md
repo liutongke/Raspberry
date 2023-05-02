@@ -1,6 +1,7 @@
 # 树莓派（Raspberry Pi）学习资料总结
->前言：写这份总结目的是树莓派吃灰几年一直运行docker在家当作开发测试的数据库使用，导致之前买的硬件都没有得到充分的利用，再加上以前零零碎碎写的资料不完整、包括开发的Python脚本丢失，比如小车的L298N电机驱动板之前踩过不少坑当时也没能留下资料，包括接线图也没保存。所以决定对这些资料进行重新整理总结汇总，以便以后查看，以下内容均基于树莓派3b（Raspberry Pi 3b）。
+>前言：写这份总结目的是树莓派吃灰几年一直运行docker在家当作开发测试的数据库使用，导致之前买的硬件都没有得到充分的利用，再加上以前零零碎碎写的资料不完整、包括开发的Python脚本丢失，比如小车的L298N电机驱动板之前踩过不少坑当时也没能留下资料，包括接线图也没保存。所以决定对这些资料进行重新整理总结汇总，以便以后查看。
 
+**开发板：树莓派3b（Raspberry Pi 3b）**
 **系统版本：Raspberry Pi OS 64 位（Raspbian）**
 
 # Go编译树莓派运行程序
@@ -472,8 +473,7 @@ picam2.start_and_record_video("test.mp4", duration=5) #视频格式mp4,长度5�
 
 # [调整swap分区大小](https://www.cnblogs.com/varden/p/15409542.html)
 
-sudo i2cdetect -y 1
-![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230425180032.png)
+
 
 # [SSD1306.py 函数](https://pypi.org/project/micropython-ssd1306py/)
 
@@ -490,3 +490,24 @@ sudo i2cdetect -y 1
 1. framebuf.vline(x,y,w,c)，画垂直直线
 1. framebuf.fill_rect(x,y,w,h,c)，画填充矩形
 1. framebuf.rect(x,y,w,h,c)，画空心矩形
+
+
+# i2c是共享总线，只要没有两个设备共享dame i2c地址，就允许多个设备并联
+Re: Both devices need to use SDA and SCL
+Fri Dec 20, 2019 5:10 pm
+
+I2C is a bus. Multiple devices may be connected in parallel.
+
+
+GY30模块（BH1750FVI光线传感器）
+
+sudo i2cdetect -y 1
+
+# adafruit_pcf8591
+
+[Installing Blinka on Raspberry Pi](https://learn.adafruit.com/circuitpython-on-raspberrypi-linux/installing-circuitpython-on-raspberry-pi)
+
+`NameError: name 'PCF8591' is not defined`报错，将
+`/usr/local/lib/python3.9/dist-packages/adafruit_pcf8591`位置中的`analog_in.py、analog_out.py`文件修改如下图：
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230502190628.png)
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230502190642.png)
