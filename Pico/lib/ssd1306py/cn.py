@@ -33,6 +33,7 @@ def _display_font16(oled, string, x_axis, y_axis):
         code |= data_code[1] << 8
         code |= data_code[2]
         byte_data = _fonts[16][code]
+        print(byte_data)
         for y in range(0, 16):
             a = bin(byte_data[y]).replace('0b', '')
             while len(a) < 8:
