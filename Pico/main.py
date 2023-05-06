@@ -56,12 +56,17 @@ lcd.text_cn('上海多云台风℃', 0, 48, 16)
 def weather():
     weather_info = Tools.get_base_weather()
 
-    text = '%s%s%s℃' % (weather_info['city'],
-                        weather_info['weather'],
-                        weather_info['temperature']
-                        )
-    print(text)
-    lcd.text_cn('2', 0, 48, 16)
+    text = '%s%s' % (weather_info['city'],
+                     weather_info['weather']
+                     )
+
+    lcd.text_cn(text, 0, 48, 16)
+
+    city_len = 16 * len(text)
+    tmp = str(weather_info['temperature'])
+    lcd.text(tmp, city_len, 48, 16)
+    tmp_len = 8 * len(tmp)
+    lcd.text_cn('℃', city_len + tmp_len, 48, 16)
 
 
 '''
@@ -73,7 +78,7 @@ def weather():
 def hour():
     t = time.localtime(time.time())
 
-    if len(str(t[4])) == 1:
+    if len(str(t[3])) == 1:
         lcd.text('0', 16, 16, 32)
         lcd.text(str(t[3]), 32, 16, 32)
     else:
@@ -113,7 +118,7 @@ def week():
         '5': '六',
         '6': '日',
     }
-    print(str(t[6]), t[6])
+    # print(str(t[6]), t[6])
     lcd.text_cn(weekday[str(t[6])], 0, 32, 16)
 
 

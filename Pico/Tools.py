@@ -59,7 +59,7 @@ def get_city_code():
 
 
 def get_base_weather(extensions_type=0):
-    return {'winddirection': '\u5317', 'humidity_float': '90.0', 'city': '\u4e0a\u6d77\u5e02', 'humidity': '90', 'weather': '\u9634', 'reporttime': '2023-05-05 23:03:45', 'temperature': '22', 'temperature_float': '22.0', 'adcode': '310000', 'windpower': '\u22643', 'province': '\u4e0a\u6d77'}
+    return {'winddirection': '\u5317', 'humidity_float': '90.0', 'city': '\u4e0a\u6d77\u5e02', 'humidity': '90', 'weather': '\u9634', 'reporttime': '2023-05-05 23:03:45', 'temperature': '222', 'temperature_float': '22.0', 'adcode': '310000', 'windpower': '\u22643', 'province': '\u4e0a\u6d77'}
     # extensions = "all" if extensions_type == 1 else "base"
     # weather_url = f"https://restapi.amap.com/v3/weather/weatherInfo?key={config.gaode_key()}&city={get_city_code()}&extensions={extensions}"
 
