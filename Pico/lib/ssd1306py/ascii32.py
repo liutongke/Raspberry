@@ -13,9 +13,6 @@ def _get_ch(ch):
     global _file
     if _file is None:
         _file = open('/lib/ssd1306py/ascii32.txt', 'r')
-        print(_file)
-        #_file = open(sys.path[1] + '/ssd1306py/ascii32.txt', 'r')
-        
 
     _file.seek(ord(ch) * 329)
     get_line1 = _file.readline()
@@ -38,7 +35,6 @@ def _get_ch(ch):
 
 
 def display(oled, string, x_axis, y_axis):
-    print(456)
     offset = 0
     for k in string:
         byte_data = _get_ch(k)
