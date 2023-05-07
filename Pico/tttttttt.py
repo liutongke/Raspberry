@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 @author:keke
-@file: main.py
+@file: clock.py
 @time: 2023/4/27 21:20
 @version：Python 3.11.2
 @title: 

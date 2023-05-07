@@ -1,6 +1,13 @@
 import urequests as requests
 import json
 import config
+import ntptime
+import time
+import utime
+import time
+import utime
+import machine
+from ntptime import settime
 
 
 def json_decode(json_dict_):
@@ -8,7 +15,7 @@ def json_decode(json_dict_):
 
 
 def json_encode(dict_):
-    return json.dumps(dict_,)
+    return json.dumps(dict_, )
 
 
 # 获取当前ip地址
@@ -16,6 +23,7 @@ def get_ip():
     return "114.83.85.103"
     # response = requests.get(url='https://api64.ipify.org?format=json').json()
     # return response["ip"]
+
 
 # ip定位 https://lbs.amap.com/api/webservice/guide/api/ipconfig
 
@@ -28,11 +36,13 @@ def get_location():
 
     return requests.get(url=local_url).json()
 
+
 # 获取城市编码
 
 
 def get_city_code():
     return get_location()["adcode"]
+
 
 # {
 #     "status": "1",
@@ -59,12 +69,35 @@ def get_city_code():
 
 
 def get_base_weather(extensions_type=0):
-    return {'winddirection': '\u5317', 'humidity_float': '90.0', 'city': '\u4e0a\u6d77\u5e02', 'humidity': '90', 'weather': '\u9634', 'reporttime': '2023-05-05 23:03:45', 'temperature': '222', 'temperature_float': '22.0', 'adcode': '310000', 'windpower': '\u22643', 'province': '\u4e0a\u6d77'}
+    return {
+        "province":
+            "上海",
+        "city":
+            "青浦区",
+        "adcode":
+            "310118",
+        "weather":
+            "阴",
+        "temperature":
+            "14",
+        "winddirection":
+            "北",
+        "windpower":
+            "≤3",
+        "humidity":
+            "95",
+        "reporttime":
+            "2023-05-07 21:33:52",
+        "temperature_float":
+            "14.0",
+        "humidity_float":
+            "95.0"
+    }
     # extensions = "all" if extensions_type == 1 else "base"
     # weather_url = f"https://restapi.amap.com/v3/weather/weatherInfo?key={config.gaode_key()}&city={get_city_code()}&extensions={extensions}"
-
+    #
     # response = requests.get(url=weather_url).json()
-
+    #
     # return response['lives'][0]
 
 
