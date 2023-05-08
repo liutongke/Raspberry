@@ -11,16 +11,26 @@ import (
 )
 
 func utf8To16(word string) string {
-	return "0x" + hex.EncodeToString([]byte(word))
+
+	return "0x" + hex.EncodeToString([]byte(strings.TrimSpace(word)))
 }
 
+// https://blog.csdn.net/gaoluhua/article/details/109128265
+func toUtf8(hexStringData string) {
+	// 将 16进制的字符串 转换 byte
+	hex_data, _ := hex.DecodeString(hexStringData)
+	// 将 byte 转换 为字符串 输出结果
+	println(string(hex_data))
+
+}
 func main() {
 	list := word()
+
 	ziti := WordCode()
 
 	str := ""
 	for key, word := range list {
-		str += utf8To16(word) + ":" + ziti[key] + ",#" + word + "\r\n"
+		str += utf8To16(word) + ": " + ziti[key] + ", # " + strings.TrimSpace(word) + "\r\n"
 	}
 	WriteFile("font.txt", str)
 }
@@ -44,7 +54,7 @@ func word() map[int]string {
 		match := r.FindAllString(str, -1)
 
 		if len(match) > 0 && len(str) > 0 {
-			list[i] = str
+			list[i] = strings.TrimSpace(str)
 			i++
 		}
 	}
