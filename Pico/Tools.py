@@ -112,3 +112,14 @@ def get_all_weather(extensions_type=1):
     # response = requests.request("GET", url, headers=headers, data=payload)
 
     # print(response.text)
+
+
+def write_file(file_path, file_data):
+    file = open(file_path, "w")
+    file.write(file_data)
+    file.close()
+
+
+def read_file(file_path):
+    f = open(file_path, 'r')
+    return f.read()

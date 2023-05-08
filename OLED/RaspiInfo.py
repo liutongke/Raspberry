@@ -47,7 +47,7 @@ class RaspiInfo:
         finally:
             s.close()
 
-        return "ip地址:%s" % ip
+        return "内网IP:%s" % ip
 
     def GetCpuTemp(self):
         file = open("/sys/class/thermal/thermal_zone0/temp")

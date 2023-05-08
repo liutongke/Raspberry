@@ -511,3 +511,6 @@ sudo i2cdetect -y 1
 `/usr/local/lib/python3.9/dist-packages/adafruit_pcf8591`位置中的`analog_in.py、analog_out.py`文件修改如下图：
 ![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230502190628.png)
 ![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230502190642.png)
+
+
+# [Github: 单独删除某个文件的所有历史记录](https://blog.csdn.net/q258523454/article/details/83899911)

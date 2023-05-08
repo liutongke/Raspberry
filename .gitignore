@@ -8,3 +8,5 @@
 /超声波雷达/__pycache__
 /OLED/examples
 /OLED/__pycache__
+/OLED/config.py
+/Pico/config.py

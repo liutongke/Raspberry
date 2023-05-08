@@ -33,6 +33,7 @@ from PIL import Image
 import RaspiInfo
 import DH11
 import GetLux
+import Tools
 
 txt = """
 待到秋来九月八，
@@ -117,16 +118,31 @@ if __name__ == "__main__":
             temp = []
 
             dict_ = DH11.DH11().GetDH11Data()
-            temperature = "室温:%.2f ℃" % dict_['temperature']
-            humidity = "湿度:%.2f RH" % dict_['humidity']
             temp.append(time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()))
-            temp.append(temperature)
-            temp.append(humidity)
+            temp.append("室内温度:%.2f ℃" % dict_['temperature'])
+            temp.append("室内湿度:%.2f RH" % dict_['humidity'])
             temp.append(GetLux.GetIlluminance())
             text(temp)
             sleep(5)
+
             text(RaspiInfo.RaspiInfo().GetRaspiInfo())
             sleep(5)
 
+            base_city_weather = Tools.get_base_weather()
+            text([
+                "城市:%s" % base_city_weather['city'],
+                "实时天气:%s" % base_city_weather['weather'],
+                "实时气温:%s ℃" % base_city_weather['temperature_float'],
+                "空气湿度:%s RH" % base_city_weather['humidity_float'],
+            ])
+            sleep(5)
+
+            text([
+                "风向:%s" % base_city_weather['winddirection'],
+                "风力级别:%s" % base_city_weather['windpower'],
+                "发布:%s" % base_city_weather['reporttime'],
+                "ip地址:%s" % Tools.get_ip(),
+            ])
+            sleep(5)
     except KeyboardInterrupt:
         pass
