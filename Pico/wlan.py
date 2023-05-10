@@ -25,6 +25,7 @@ class Wlan:
             led.Led().blingbling()
         print('IP: ', self.wlan.ifconfig()[0])  # 显示Pico W开发板IP地址
         # print("wifi", self.wlan.isconnected())
+        ntptime.host = 'ntp1.aliyun.com'
         ntptime.settime()
         return True
 

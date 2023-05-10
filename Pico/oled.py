@@ -235,3 +235,18 @@ class Oled:
         # lcd.text_cn('二', 104, 16, 16)
         # lcd.text_cn('兔年', 88, 32, 16)
         # lcd.text_cn('四', 104, 32, 16)
+
+    '''
+    滚动字幕，除了默认字体，循环问题速度较慢
+    '''
+
+    def scroll(self):
+        while True:
+            self.move('hello world!')
+
+    def move(self, str_font):
+        for i in range(0, 128):
+            lcd.clear()
+            lcd.text(str_font, i, 0, 16)
+            lcd.text(str_font, i - 128, 0, 16)
+            lcd.show()

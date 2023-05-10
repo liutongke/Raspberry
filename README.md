@@ -513,4 +513,74 @@ sudo i2cdetect -y 1
 ![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230502190642.png)
 
 
-# [Github: 单独删除某个文件的所有历史记录](https://blog.csdn.net/q258523454/article/details/83899911)
+# ThinkAPI统一API接口服务
+https://www.kancloud.cn/topthink-doc/think-api/1861639
+
+
+# 获取本机公网ip地址
+
+
+```
+http://ip.42.pl/raw
+https://api.ip.sb/ip
+http://ip.3322.net
+http://ip.qaros.com
+http://ip.cip.cc
+http://ident.me
+http://icanhazip.com
+https://api.ipify.org
+https://api64.ipify.org?format=json
+```
+
+# 更换python软连接
+https://blog.csdn.net/qq_42887760/article/details/100997264
+
+# 安装使用samba
+```
+sudo apt-get install samba
+# 如果安装失败卸载冲突依赖
+sudo apt-get install autoremove 对应的依赖包名称
+
+# 重启服务
+sudo /etc/init.d/smbd restart
+​
+# 查看服务状态
+sudo /etc/init.d/smbd status
+
+# 开机自启动
+sudo systemctl enable smbd
+
+# 修改用户密码
+sudo smbpasswd -a 用户名
+```
+
+配置目录位置：
+```
+/etc/samba
+```
+
+```
+各参数意思
+[kingston]：分享名称
+comment：备注描述
+path：共享文件夹目录
+writable：是否可写入，不能写入就不能创建文件夹
+browseable：是否可以访问浏览
+valid user：允许哪个用户访问，这里需要按照指定的账户访问samba服务
+```
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230509191456.png)
+
+`/etc/samba/smb.conf`末尾添加
+```
+[kingston]
+   comment = Kingston
+   path = /media/keke/Kingston-A400
+   writable = yes
+   browseable = yes
+   valid user = ubuntu
+   available = yes
+   create mask = 0777
+   directory mask = 0777
+   public = yes
+   write list = keke
+```

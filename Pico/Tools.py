@@ -25,9 +25,8 @@ def json_encode(dict_):
 
 # 获取当前ip地址
 def get_ip():
-    return "114.83.85.103"
-    # response = requests.get(url='https://api64.ipify.org?format=json').json()
-    # return response["ip"]
+    response = requests.get(url='http://ip.42.pl/raw')
+    return response.text
 
 
 # ip定位 https://lbs.amap.com/api/webservice/guide/api/ipconfig
