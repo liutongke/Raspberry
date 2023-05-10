@@ -85,6 +85,7 @@ class Oled:
         lcd.text(tmp, city_len, 48, 16)
         tmp_len = 8 * len(tmp)
         lcd.text_cn('℃', city_len + tmp_len, 48, 16)
+        lcd.text('  ', city_len + tmp_len + 16, 48, 16)  # 当天气一个字时候清除多余的℃
 
     '''
         # 时
