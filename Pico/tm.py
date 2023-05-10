@@ -43,5 +43,4 @@ def getTm():
 
 def tmStr():
     t = getNow(8)
-    "2023-5-8 20:22:22"
     return "%s-%s-%s %s:%s:%s" % (t[0], t[1], t[2], t[3], t[4], t[5])

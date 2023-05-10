@@ -19,7 +19,7 @@ if __name__ == '__main__':
         oled.Oled().start()
 
         tms = Timer(-1)
-        tms.init(period=10000, mode=Timer.PERIODIC, callback=lambda t: timer_weather_wannianli())
+        tms.init(period=100000, mode=Timer.PERIODIC, callback=lambda t: timer_weather_wannianli())
 
         oled.Oled().minute()
         oled.Oled().hour()

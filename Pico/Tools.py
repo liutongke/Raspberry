@@ -99,7 +99,7 @@ def get_wannianli():
     file_name = 'wanninali.txt'
 
     d = json_decode(Tools.read_file(file_name))
-    if 'endTm' in d and d['endTm'] > time.time():
+    if 'endTm' in d and d['endTm'] > tm.getTm():
         return d['data']
 
     data = get_request_wannianli()
@@ -142,12 +142,12 @@ def get_base_weather(extensions_type=0):
     file_name = 'weather.txt'
 
     d = json_decode(Tools.read_file(file_name))
-    if 'endTm' in d and d['endTm'] > time.time():
+    if 'endTm' in d and d['endTm'] > tm.getTm():
         return d['data']
 
     data = get_weather(0)
     dict_ = {
-        'endTm': tm.getTm() + 3600,
+        'endTm': tm.getTm() + 600,
         'data': data,
         'tm': tm.tmStr()
     }
@@ -184,10 +184,11 @@ def get_weather(extensions_type=0):
     # }
     extensions = "all" if extensions_type == 1 else "base"
     weather_url = f"https://restapi.amap.com/v3/weather/weatherInfo?key={config.gaode_key()}&city={get_city_code()}&extensions={extensions}"
-
+    # weather_url = f"http://192.168.1.105:9500/"
     response = requests.get(url=weather_url).json()
 
     return response['lives'][0]
+    # return response['data']
 
 
 def get_all_weather(extensions_type=1):
