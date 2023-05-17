@@ -470,6 +470,8 @@ picam2 = Picamera2()
 picam2.start_and_record_video("test.mp4", duration=5) #视频格式mp4,长度5秒
 ```
 
+# OSError: libmmal.so: cannot open shared object file: No such file or directory
+https://segmentfault.com/a/1190000040009665
 
 # [调整swap分区大小](https://www.cnblogs.com/varden/p/15409542.html)
 
@@ -584,3 +586,6 @@ valid user：允许哪个用户访问，这里需要按照指定的账户访问s
    public = yes
    write list = keke
 ```
+
+
+sudo mount /dev/sda1 /media/keke/

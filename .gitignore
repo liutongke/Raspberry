@@ -11,3 +11,6 @@
 /OLED/config.py
 /Pico/config.py
 /Pico资料/字体取模/font/.idea
+/ESP/config.py
+/ESP/images
+/ESP/*.mp4
