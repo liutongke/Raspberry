@@ -380,6 +380,50 @@ WORKDIR /usr/local/nginx/sbin
 CMD ["./nginx","-g","daemon off;"]
 ```
 
+# Nginx搭建RTMP-HLS视频直播服务器m3u8直播
+
+1. 在rtmp配置中增加hls切片设置
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230518182457.png)
+
+```
+rtmp {
+    server {
+        listen 1935;
+        chunk_size 4096;
+        application live {
+            live on;
+            hls on;
+            hls_path /var/www/html/hls;   #切片存放位置
+            hls_fragment 5s;        
+            hls_playlist_length 15s;
+            hls_continuous on; 
+            hls_cleanup on;
+            hls_nested on;
+           }
+        }
+    }
+```
+
+2. 新增m3u8播放
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230518182545.png)
+```
+        location /hls {
+           types {
+            application/vnd.apple.mpegurl m3u8;
+            video/mp2ts ts;
+           }
+           root /var/www/html/;
+           add_header Cache-Control no-cache;
+           add_header Access-Control-Allow-Origin *;
+        }
+```
+
+3.m3u8播放地址
+```
+http://192.168.1.106/hls/index.m3u8
+```
+
+
 查看摄像头
 ```
 ls /dev/video*
