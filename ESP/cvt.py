@@ -2,12 +2,12 @@
 # -*- coding: utf-8 -*-
 """
 @author:keke
-@file: tuiliu.py
-@time: 2023/5/16 21:58
+@file: cvt.py
+@time: 2023/5/18 20:47
 @version：Python 3.11.2
 @title: 
 """
-# 本地摄像头推流
+
 import subprocess as sp
 import socket
 import cv2
@@ -15,28 +15,19 @@ import io
 from PIL import Image
 import numpy as np
 import time
-import os
-import byte_stream
 
 
 class Monitor:
-    rtmpUrl = "rtmp://192.168.1.106:9001/live/esp32-cam"  # 推流地址
-    fps = 10  # 设置过大不符合实际帧率会出现撕裂、绿屏、花屏等各种显示异常问题
-    width = 800
-    height = 600
-
-    listen_ip = "0.0.0.0"
-    listen_port = 9090
+    rtmpUrl = "rtmp://192.168.1.106:9001/live/raspi"  # 推流地址
+    fps = 30  # 设置过大不符合实际帧率会出现撕裂、绿屏、花屏等各种显示异常问题
+    width = 640
+    height = 480
 
     is_first = False
     gray_background = None
 
-    n = 0
-
     def __init__(self):
         self.out = None
-        self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
-        self.udp_socket.bind((self.listen_ip, self.listen_port))
 
     def run(self):
         # ffmpeg command
@@ -62,25 +53,34 @@ class Monitor:
                    '-preset', 'ultrafast',
                    '-f', 'flv',
                    self.rtmpUrl]
-        self.init_save_video()  # 初始化保存视频参数
+        # self.init_save_video()  # 初始化保存视频参数
         i = 0
         p = sp.Popen(command, stdin=sp.PIPE)  # 设置管道
 
+        cap = cv2.VideoCapture(0)
+
+        cap.set(3, 640)  # 摄像头采集图像的宽度320
+        cap.set(4, 480)  # 摄像头采集图像的高度240
+        cap.set(5, 30)  # 摄像头采集图像的帧率fps为30
+
+        # 查看采集图像的参数
+        print(cap.get(3))
+        print(cap.get(4))
+        print(cap.get(5))
+
         while True:
             i += 1
-            self.n += 1
-            data, IP = self.udp_socket.recvfrom(100000)
-
-            device_id, payload = byte_stream.decode_payload(data)
-
-            img = self.water_mark(payload)  # 添加水印
+            ret, img = cap.read()
+            # img = self.decode_stream(data)
+            # img = self.water_mark(data)  # 添加水印
 
             # img = self.decode_stream(data)# 不添加水印直接推流
-            addr = f'{device_id}/' + str(i) + '.jpg'
-            self.save_image(addr, img)  # 保存图片
+
+            # self.save_image(i, data)  # 保存图片
 
             # cv2.imshow('rtmp', img) # 预览显示
-            self.save_video(img)  # 保存视频
+            # self.save_video(img)  # 保存视频
+
             p.stdin.write(img.tostring())  # 管道推流
 
     '''
@@ -97,7 +97,7 @@ class Monitor:
     def init_save_video(self):
         text = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         # 定义输出视频的文件名、编解码器、帧率和分辨率
-        output_filename = 'videos/%s.mp4' % text
+        output_filename = '%s.mp4' % text
 
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # 编解码器，此处使用MP4V
         # fps = 30  # 帧率
@@ -146,47 +146,12 @@ class Monitor:
         return blended
 
     '''
-    移动检测
-    frame 读取一帧图像
-    '''
-
-    def move_motion(self, frame, gray_background):
-        frame = cv2.resize(frame, None, fx=0.5, fy=0.5)  # 可选：调整图像大小
-        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # 转换为灰度图像
-        gray_frame = cv2.GaussianBlur(gray_frame, (21, 21), 0)  # 可选：应用高斯模糊
-
-        # 计算当前帧与背景帧的差异
-        frame_delta = cv2.absdiff(gray_background, gray_frame)
-        thresh = cv2.threshold(frame_delta, 30, 255, cv2.THRESH_BINARY)[1]
-
-        # 执行形态学操作，去除噪声
-        thresh = cv2.dilate(thresh, None, iterations=2)
-        contours, _ = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-        # 遍历检测到的轮廓
-        for contour in contours:
-            if cv2.contourArea(contour) < 1000:  # 可选：设置最小轮廓面积
-                continue
-            (x, y, w, h) = cv2.boundingRect(contour)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-        # 显示当前帧
-        addr = 'move/' + str(self.n) + '.jpg'
-        self.save_image(addr, frame)
-
-    '''
     保存图片
     '''
 
     def save_image(self, addr, img3):
-        # saveFile = 'images/' + str(addr) + '.jpg'
-        result = addr.split('/')[0]
-        self.mkdir(result)
-        cv2.imwrite(addr, img3)  # 保存图像文件
-
-    def mkdir(self, filename):
-        if not os.path.exists(filename):  # 判断所在目录下是否有该文件名的文件夹
-            os.mkdir(filename)  # 创建多级目录用mkdirs，单击目录mkdir
+        saveFile = 'images/' + str(addr) + '.jpg'
+        cv2.imwrite(saveFile, img3)  # 保存图像文件
 
 
 if __name__ == "__main__":

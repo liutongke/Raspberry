@@ -3,6 +3,7 @@ import network
 import camera
 import time
 import config
+import micro_byte_stream
 
 # 连接wifi
 wlan = network.WLAN(network.STA_IF)
@@ -74,7 +75,8 @@ s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
 try:
     while True:
         buf = camera.capture()  # 获取图像数据
-        s.sendto(buf, (config.get_server_ip(), config.get_server_port()))  # 向服务器发送图像数据
+        s.sendto(micro_byte_stream.encode_payload(buf),
+                 (config.get_server_ip(), config.get_server_port()))  # 向服务器发送图像数据
         time.sleep(0.1)
 except:
     pass
