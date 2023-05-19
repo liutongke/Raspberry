@@ -20,7 +20,11 @@ import byte_stream
 
 
 class Monitor:
-    rtmpUrl = "rtmp://192.168.1.106:9001/live/esp32-cam"  # 推流地址
+    is_init = {}
+    rtmpUrl = {
+        "a0b765593494": "rtmp://192.168.1.106:9001/live/esp32-cam",
+        "RaspberryPi": "rtmp://192.168.1.106:9001/live/raspi-3b"
+    }  # 推流地址
     fps = 10  # 设置过大不符合实际帧率会出现撕裂、绿屏、花屏等各种显示异常问题
     width = 800
     height = 600
@@ -34,11 +38,32 @@ class Monitor:
     n = 0
 
     def __init__(self):
-        self.out = None
+        self.p = {}
+        self.out = {}
         self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
         self.udp_socket.bind((self.listen_ip, self.listen_port))
 
     def run(self):
+
+        while True:
+            self.n += 1
+            data, IP = self.udp_socket.recvfrom(100000)
+
+            device_id, payload = byte_stream.decode_payload(data)
+            if self.is_init.get(device_id) is None:
+                self.init_cam(device_id)
+
+            img = self.water_mark(payload)  # 添加水印
+
+            # img = self.decode_stream(data)# 不添加水印直接推流
+            addr = f'{device_id}/' + str(self.n) + '.jpg'
+            self.save_image(addr, img)  # 保存图片
+
+            # cv2.imshow('rtmp', img) # 预览显示
+            self.save_video(img, device_id)  # 保存视频
+            self.p[device_id].stdin.write(img.tostring())  # 管道推流
+
+    def init_cam(self, device_id):
         # ffmpeg command
         command = ['ffmpeg',
                    '-y',
@@ -61,43 +86,29 @@ class Monitor:
                    '-pix_fmt', 'yuv420p',
                    '-preset', 'ultrafast',
                    '-f', 'flv',
-                   self.rtmpUrl]
-        self.init_save_video()  # 初始化保存视频参数
-        i = 0
-        p = sp.Popen(command, stdin=sp.PIPE)  # 设置管道
+                   self.rtmpUrl[device_id]]
+        self.init_save_video(device_id)  # 初始化保存视频参数
 
-        while True:
-            i += 1
-            self.n += 1
-            data, IP = self.udp_socket.recvfrom(100000)
-
-            device_id, payload = byte_stream.decode_payload(data)
-
-            img = self.water_mark(payload)  # 添加水印
-
-            # img = self.decode_stream(data)# 不添加水印直接推流
-            addr = f'{device_id}/' + str(i) + '.jpg'
-            self.save_image(addr, img)  # 保存图片
-
-            # cv2.imshow('rtmp', img) # 预览显示
-            self.save_video(img)  # 保存视频
-            p.stdin.write(img.tostring())  # 管道推流
+        self.p[device_id] = sp.Popen(command, stdin=sp.PIPE)  # 设置管道
+        self.is_init[device_id] = True
 
     '''
     保存视频
     '''
 
-    def save_video(self, img):
-        self.out.write(img)
+    def save_video(self, img, device_id):
+        self.out[device_id].write(img)
 
     '''
     初始化保存视频
     '''
 
-    def init_save_video(self):
+    def init_save_video(self, device_id):
+        filename = "%s_videos" % device_id
+        self.mkdir(filename)
         text = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
         # 定义输出视频的文件名、编解码器、帧率和分辨率
-        output_filename = 'videos/%s.mp4' % text
+        output_filename = '%s/%s.mp4' % (filename, text)
 
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # 编解码器，此处使用MP4V
         # fps = 30  # 帧率
@@ -105,7 +116,7 @@ class Monitor:
         # frame_height = 480  # 视频高度
 
         # 创建VideoWriter对象
-        self.out = cv2.VideoWriter(output_filename, fourcc, self.fps, (self.width, self.height))
+        self.out[device_id] = cv2.VideoWriter(output_filename, fourcc, self.fps, (self.width, self.height))
 
     '''
     不加水印直接推流
