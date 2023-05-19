@@ -15,16 +15,22 @@ import io
 from PIL import Image
 import numpy as np
 import time
+import os
 
 
 class Monitor:
     rtmpUrl = "rtmp://192.168.1.106:9001/live/esp32-cam"  # 推流地址
-    fps = 6  # 设置过大不符合实际帧率会出现撕裂、绿屏、花屏等各种显示异常问题
+    fps = 30  # 设置过大不符合实际帧率会出现撕裂、绿屏、花屏等各种显示异常问题
     width = 800
     height = 600
 
     listen_ip = "0.0.0.0"
     listen_port = 9090
+
+    is_first = False
+    gray_background = None
+
+    n = 0
 
     def __init__(self):
         self.out = None
@@ -61,13 +67,14 @@ class Monitor:
 
         while True:
             i += 1
+            self.n += 1
             data, IP = self.udp_socket.recvfrom(100000)
 
             img = self.water_mark(data)  # 添加水印
 
             # img = self.decode_stream(data)# 不添加水印直接推流
-
-            self.save_image(i, img)  # 保存图片
+            addr = 'images/' + str(i) + '.jpg'
+            self.save_image(addr, img)  # 保存图片
 
             # cv2.imshow('rtmp', img) # 预览显示
             self.save_video(img)  # 保存视频
@@ -114,6 +121,12 @@ class Monitor:
         img = np.asarray(image)
         RGB_img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)  # ESP32采集的是RGB格式，要转换为BGR（opencv的格式）
 
+        # if not self.is_first:
+        #     frame = cv2.resize(RGB_img, None, fx=0.5, fy=0.5)  # 可选：调整图像大小
+        #     gray_background = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # 转换为灰度图像
+        #     self.gray_background = cv2.GaussianBlur(gray_background, (21, 21), 0)  # 可选：应用高斯模糊
+        #     self.is_first = True
+
         blank_img = np.zeros(shape=(RGB_img.shape[0], RGB_img.shape[1], 3), dtype=np.uint8)
         font = cv2.FONT_HERSHEY_SIMPLEX
 
@@ -126,15 +139,51 @@ class Monitor:
 
         blended = cv2.addWeighted(src1=RGB_img, alpha=0.7,
                                   src2=blank_img, beta=1, gamma=2)
+        # self.move_motion(RGB_img, self.gray_background)  # 移动检测
         return blended
+
+    '''
+    移动检测
+    frame 读取一帧图像
+    '''
+
+    def move_motion(self, frame, gray_background):
+        frame = cv2.resize(frame, None, fx=0.5, fy=0.5)  # 可选：调整图像大小
+        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)  # 转换为灰度图像
+        gray_frame = cv2.GaussianBlur(gray_frame, (21, 21), 0)  # 可选：应用高斯模糊
+
+        # 计算当前帧与背景帧的差异
+        frame_delta = cv2.absdiff(gray_background, gray_frame)
+        thresh = cv2.threshold(frame_delta, 30, 255, cv2.THRESH_BINARY)[1]
+
+        # 执行形态学操作，去除噪声
+        thresh = cv2.dilate(thresh, None, iterations=2)
+        contours, _ = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        # 遍历检测到的轮廓
+        for contour in contours:
+            if cv2.contourArea(contour) < 1000:  # 可选：设置最小轮廓面积
+                continue
+            (x, y, w, h) = cv2.boundingRect(contour)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+        # 显示当前帧
+        addr = 'move/' + str(self.n) + '.jpg'
+        self.save_image(addr, frame)
 
     '''
     保存图片
     '''
 
     def save_image(self, addr, img3):
-        saveFile = 'images/' + str(addr) + '.jpg'
-        cv2.imwrite(saveFile, img3)  # 保存图像文件
+        # saveFile = 'images/' + str(addr) + '.jpg'
+        result = addr.split('/')[0]
+        self.mkdir(result)
+        cv2.imwrite(addr, img3)  # 保存图像文件
+
+    def mkdir(self, filename):
+        if not os.path.exists(filename):  # 判断所在目录下是否有该文件名的文件夹
+            os.mkdir(filename)  # 创建多级目录用mkdirs，单击目录mkdir
 
 
 if __name__ == "__main__":
