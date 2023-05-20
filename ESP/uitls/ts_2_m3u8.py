@@ -37,9 +37,9 @@ def generate_m3u8(folder_path, output_file, segment_duration, sequence):
 
 
 # 指定文件夹路径、输出文件路径和分片时长
-folder_path = './'
-output_file = './images.m3u8'
-segment_duration = 3.0  # 分片时长（秒）
-sequence = 0  # 当前播放定位
+# folder_path = './'
+# output_file = './output.m3u8'
+# segment_duration = 16.0  # 分片时长（秒）
+# sequence = 1  # 当前播放定位
 # 生成规范的 M3U8 文件
-generate_m3u8(folder_path, output_file, segment_duration, sequence)
+# generate_m3u8('./', 'C:\\Users\\keke\\dev\\Raspberry-Pi\\ESP\\test\\video/output.m3u8', 16.0, sequence)

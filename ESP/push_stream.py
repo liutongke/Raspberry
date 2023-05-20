@@ -9,23 +9,19 @@
 """
 # 本地摄像头推流
 import subprocess as sp
-import socket
-import cv2
-import io
 from PIL import Image
 import numpy as np
-import time
-import os
 import byte_stream
-import threading
-import images_to_ts
-import ts_2_m3u8
+import config
+import socket
+import time
+import cv2
+import io
+import os
 
 
 class Monitor:
     is_init = {}
-    init_m3u8 = {}
-    init_m3u8_num = {}
     rtmpUrl = {
         # "a0b765593494": "rtmp://192.168.1.106:9001/live/esp32-cam",
         "a0b765593494": "rtmp://192.168.1.107:1935/live/esp32",
@@ -43,31 +39,6 @@ class Monitor:
 
     n = 0
 
-    def write_timestamp(self, file_path, content):
-        # 使用追加模式打开文件，并写入内容
-        with open(file_path, 'a') as file:
-            file.write(str(content) + '\n')
-
-    def m3u8(self, device_id, img):
-        if device_id not in self.init_m3u8 and device_id not in self.init_m3u8_num:
-            self.init_m3u8[device_id] = 0
-            self.init_m3u8_num[device_id] = 0
-        if (self.n % 30) == 0:  # 需要刷新下新的切片
-            output_file = 'C:\\Users\\keke\\dev\\Raspberry-Pi\\ESP\\test\\video/output%s.ts' % str(
-                self.init_m3u8[device_id] + 1)
-            images_folder = f'images2ts_{device_id}_{self.init_m3u8[device_id] + 1}/'
-            images_to_ts.images_to_ts(images_folder, output_file, self.fps)
-            ts_2_m3u8.generate_m3u8('C:\\Users\\keke\\dev\\Raspberry-Pi\\ESP\\test\\video',
-                                    'C:\\Users\\keke\\dev\\Raspberry-Pi\\ESP\\test\\video/output.m3u8', 17.0,
-                                    self.init_m3u8[device_id] + 1)
-
-            self.init_m3u8[device_id] += 1
-            self.init_m3u8_num[device_id] = 0
-
-        addr = f'images2ts_{device_id}_{self.init_m3u8[device_id] + 1}/' + str(self.init_m3u8_num[device_id]) + '.jpg'
-        self.init_m3u8_num[device_id] += 1
-        self.save_image(addr, img)  # 保存图片
-
     def __init__(self):
         self.p = {}
         self.out = {}
@@ -75,9 +46,6 @@ class Monitor:
         self.udp_socket.bind((self.listen_ip, self.listen_port))
 
     def run(self):
-        # self.update_redis_white_userId()  # 开启线程启动用户白名单
-        # i = 1
-        # s = 1
         while True:
             self.n += 1
             data, IP = self.udp_socket.recvfrom(100000)
@@ -86,11 +54,14 @@ class Monitor:
             if self.is_init.get(device_id) is None:
                 self.init_cam(device_id)
 
-            img = self.water_mark(payload)  # 添加水印
+            if config.is_open_water_mark():
+                img = self.water_mark(payload, device_id)  # 添加水印
+            else:
+                img = self.decode_stream(data)  # 不添加水印直接推流
 
-            # img = self.decode_stream(data)# 不添加水印直接推流
             addr = f'{device_id}/' + str(self.n) + '.jpg'
-            self.save_image(addr, img)  # 保存图片
+            if config.is_open_save_pic():
+                self.save_image(addr, img)  # 保存图片
             # if i <= 320:
             #     addr = f'{s}/' + str(i) + '.jpg'
             #     self.save_image(addr, img)  # 保存图片
@@ -99,8 +70,9 @@ class Monitor:
             #     i = 0
             #     s += 1
             # cv2.imshow('rtmp', img) # 预览显示
-            self.save_video(img, device_id)  # 保存视频
-            # self.m3u8(device_id, img)
+            if config.is_open_save_video():
+                self.save_video(img, device_id)  # 保存视频
+
             self.p[device_id].stdin.write(img.tostring())  # 管道推流
 
     def init_cam(self, device_id):
@@ -128,7 +100,8 @@ class Monitor:
                    '-preset', 'ultrafast',
                    '-f', 'flv',
                    self.rtmpUrl[device_id]]
-        self.init_save_video(device_id)  # 初始化保存视频参数
+        if config.is_open_save_video():
+            self.init_save_video(device_id)  # 初始化保存视频参数
 
         self.p[device_id] = sp.Popen(command, stdin=sp.PIPE)  # 设置管道
         self.is_init[device_id] = True
@@ -171,7 +144,7 @@ class Monitor:
     给照片增加水印
     '''
 
-    def water_mark(self, data):
+    def water_mark(self, data, device_id):
         image = Image.open(io.BytesIO(data))
         img = np.asarray(image)
         RGB_img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)  # ESP32采集的是RGB格式，要转换为BGR（opencv的格式）
@@ -186,8 +159,11 @@ class Monitor:
         font = cv2.FONT_HERSHEY_SIMPLEX
 
         text = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-
+        fps_text = f'{device_id} {self.fps}fps'
         # 添加水印的文字内容 org：水印放置的横纵坐标，(x坐标，y坐标) width = 800 height = 600
+        cv2.putText(blank_img, text=fps_text, org=(50, 50),
+                    fontFace=font, fontScale=1,
+                    color=(100, 255, 0), thickness=2, lineType=cv2.LINE_4)
         cv2.putText(blank_img, text=text, org=(420, 580),
                     fontFace=font, fontScale=1,
                     color=(100, 255, 0), thickness=2, lineType=cv2.LINE_4)
@@ -239,14 +215,6 @@ class Monitor:
     def mkdir(self, filename):
         if not os.path.exists(filename):  # 判断所在目录下是否有该文件名的文件夹
             os.mkdir(filename)  # 创建多级目录用mkdirs，单击目录mkdir
-
-    def load_redis_white_userId(self):
-        while True:
-            text = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-
-    def update_redis_white_userId(self):
-        t1 = threading.Thread(target=self.load_redis_white_userId)
-        t1.start()
 
 
 if __name__ == "__main__":

@@ -1,0 +1,1 @@
+ffmpeg -i 2023-05-20-20-23-23.mp4 -c:v libx264 -hls_time 5 -hls_list_size 0 -c:a aac -strict -2 -f hls C:\Users\keke\dev\Raspberry-Pi\ESP\test\video\jk.m3u8

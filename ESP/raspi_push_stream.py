@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 @author:keke
-@file: cvt.py
+@file: raspi_push_stream.py
 @time: 2023/5/18 20:47
 @version：Python 3.11.2
 @title: 
@@ -43,7 +43,7 @@ class Monitor:
                    '-r', str(self.fps),
                    '-i', '-',
                    # 使用低延迟的编解码器：选择具有低延迟特性的编解码器可以减少处理过程中的延迟。例如，可以使用H.264编解码器的低延迟配置（比如"ultrafast"或"superfast"）
-                   # '-c:v', 'libx264',  # 编码压缩
+                   '-c:v', 'libx264',  # 编码压缩
                    '-b:v', '4M',  # 设置视频编码器和比特率：选择适当的视频编码器（如libx264或libx265）并设置目标比特率。较高的比特率可以提高画质，但会增加带宽需求
                    # 调整GOP（Group of Pictures）大小：GOP是视频编码中一组关键帧和非关键帧的序列。减小GOP大小可以降低延迟，但可能会增加文件大小。您可以通过设置"-g"选项来调整GOP大小
                    '-g', '5',
