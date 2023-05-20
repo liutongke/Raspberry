@@ -17,15 +17,21 @@ import numpy as np
 import time
 import os
 import byte_stream
+import threading
+import images_to_ts
+import ts_2_m3u8
 
 
 class Monitor:
     is_init = {}
+    init_m3u8 = {}
+    init_m3u8_num = {}
     rtmpUrl = {
-        "a0b765593494": "rtmp://192.168.1.106:9001/live/esp32-cam",
+        # "a0b765593494": "rtmp://192.168.1.106:9001/live/esp32-cam",
+        "a0b765593494": "rtmp://192.168.1.107:1935/live/esp32",
         "RaspberryPi": "rtmp://192.168.1.106:9001/live/raspi-3b"
     }  # 推流地址
-    fps = 10  # 设置过大不符合实际帧率会出现撕裂、绿屏、花屏等各种显示异常问题
+    fps = 6  # 设置过大不符合实际帧率会出现撕裂、绿屏、花屏等各种显示异常问题
     width = 800
     height = 600
 
@@ -37,6 +43,31 @@ class Monitor:
 
     n = 0
 
+    def write_timestamp(self, file_path, content):
+        # 使用追加模式打开文件，并写入内容
+        with open(file_path, 'a') as file:
+            file.write(str(content) + '\n')
+
+    def m3u8(self, device_id, img):
+        if device_id not in self.init_m3u8 and device_id not in self.init_m3u8_num:
+            self.init_m3u8[device_id] = 0
+            self.init_m3u8_num[device_id] = 0
+        if (self.n % 30) == 0:  # 需要刷新下新的切片
+            output_file = 'C:\\Users\\keke\\dev\\Raspberry-Pi\\ESP\\test\\video/output%s.ts' % str(
+                self.init_m3u8[device_id] + 1)
+            images_folder = f'images2ts_{device_id}_{self.init_m3u8[device_id] + 1}/'
+            images_to_ts.images_to_ts(images_folder, output_file, self.fps)
+            ts_2_m3u8.generate_m3u8('C:\\Users\\keke\\dev\\Raspberry-Pi\\ESP\\test\\video',
+                                    'C:\\Users\\keke\\dev\\Raspberry-Pi\\ESP\\test\\video/output.m3u8', 17.0,
+                                    self.init_m3u8[device_id] + 1)
+
+            self.init_m3u8[device_id] += 1
+            self.init_m3u8_num[device_id] = 0
+
+        addr = f'images2ts_{device_id}_{self.init_m3u8[device_id] + 1}/' + str(self.init_m3u8_num[device_id]) + '.jpg'
+        self.init_m3u8_num[device_id] += 1
+        self.save_image(addr, img)  # 保存图片
+
     def __init__(self):
         self.p = {}
         self.out = {}
@@ -44,7 +75,9 @@ class Monitor:
         self.udp_socket.bind((self.listen_ip, self.listen_port))
 
     def run(self):
-
+        # self.update_redis_white_userId()  # 开启线程启动用户白名单
+        # i = 1
+        # s = 1
         while True:
             self.n += 1
             data, IP = self.udp_socket.recvfrom(100000)
@@ -58,9 +91,16 @@ class Monitor:
             # img = self.decode_stream(data)# 不添加水印直接推流
             addr = f'{device_id}/' + str(self.n) + '.jpg'
             self.save_image(addr, img)  # 保存图片
-
+            # if i <= 320:
+            #     addr = f'{s}/' + str(i) + '.jpg'
+            #     self.save_image(addr, img)  # 保存图片
+            # i += 1
+            # if i == 320:
+            #     i = 0
+            #     s += 1
             # cv2.imshow('rtmp', img) # 预览显示
             self.save_video(img, device_id)  # 保存视频
+            # self.m3u8(device_id, img)
             self.p[device_id].stdin.write(img.tostring())  # 管道推流
 
     def init_cam(self, device_id):
@@ -77,7 +117,8 @@ class Monitor:
                    '-r', str(self.fps),
                    '-i', '-',
                    # 使用低延迟的编解码器：选择具有低延迟特性的编解码器可以减少处理过程中的延迟。例如，可以使用H.264编解码器的低延迟配置（比如"ultrafast"或"superfast"）
-                   # '-c:v', 'libx264',  # 编码压缩
+                   # 编码压缩,不使用此编码的话ckplay播放flv出现flv:unsupported codec in video frame:2(code：-1)错误，无法正常播放
+                   '-c:v', 'libx264',
                    '-b:v', '4M',  # 设置视频编码器和比特率：选择适当的视频编码器（如libx264或libx265）并设置目标比特率。较高的比特率可以提高画质，但会增加带宽需求
                    # 调整GOP（Group of Pictures）大小：GOP是视频编码中一组关键帧和非关键帧的序列。减小GOP大小可以降低延迟，但可能会增加文件大小。您可以通过设置"-g"选项来调整GOP大小
                    '-g', '5',
@@ -198,6 +239,14 @@ class Monitor:
     def mkdir(self, filename):
         if not os.path.exists(filename):  # 判断所在目录下是否有该文件名的文件夹
             os.mkdir(filename)  # 创建多级目录用mkdirs，单击目录mkdir
+
+    def load_redis_white_userId(self):
+        while True:
+            text = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+
+    def update_redis_white_userId(self):
+        t1 = threading.Thread(target=self.load_redis_white_userId)
+        t1.start()
 
 
 if __name__ == "__main__":

@@ -1,0 +1,1 @@
+ffmpeg -i ./test.mp4 -c:v libx264 -hls_time 60 -hls_list_size 0 -c:a aac -strict -2 -f hls C:\Users\keke\dev\Raspberry-Pi\ESP\test/zxcu.m3u8

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <title>flv.js demo</title>
+    <style>
+        .mainContainer {
+            display: block;
+            width: 1024px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .urlInput {
+            display: block;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        .centeredVideo {
+            display: block;
+            width: 100%;
+            height: 576px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: auto;
+        }
+
+        .controls {
+            display: block;
+            width: 100%;
+            text-align: left;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+</head>
+<body>
+<div class="mainContainer">
+    <video id="videoElement" class="centeredVideo" controls autoplay width="1024" height="576">Your browser is too old which doesn't support HTML5 video.</video>
+</div>
+<br>
+<div class="controls">
+    <!--<button onclick="flv_load()">加载</button>-->
+    <button onclick="flv_start()">开始</button>
+    <button onclick="flv_pause()">暂停</button>
+    <button onclick="flv_destroy()">停止</button>
+    <input style="width:100px" type="text" name="seekpoint" />
+    <button onclick="flv_seekto()">跳转</button>
+</div>
+<script src="https://cdn.bootcdn.net/ajax/libs/flv.js/1.6.2/flv.js"></script>
+<script>
+    var player = document.getElementById('videoElement');
+    if (flvjs.isSupported()) {
+        console.log(window.location.host);
+        var flvPlayer = flvjs.createPlayer({
+            type: 'auto',//flv
+            //"isLive": true,//<====加个这个
+            url: 'http://192.168.1.107:8080/live/esp32.flv',//<==自行修改 视频路径
+        },{
+            enableWorker: false, //不启用分离线程
+            enableStashBuffer: false, //关闭IO隐藏缓冲区
+            reuseRedirectedURL: true, //重用301/302重定向url，用于随后的请求，如查找、重新连接等。
+            autoCleanupSourceBuffer: true //自动清除缓存
+        }
+        );
+        flvPlayer.attachMediaElement(videoElement);
+        flvPlayer.load(); //加载
+        flv_start();
+    }
+
+    function flv_start() {
+        player.play();
+    }
+
+    function flv_pause() {
+        player.pause();
+    }
+
+    function flv_destroy() {
+        player.pause();
+        player.unload();
+        player.detachMediaElement();
+        player.destroy();
+        player = null;
+    }
+
+    function flv_seekto() {
+        player.currentTime = parseFloat(document.getElementsByName('seekpoint')[0].value);
+    }
+</script>
+</body>
+
+</html>

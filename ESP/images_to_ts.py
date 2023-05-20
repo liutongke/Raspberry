@@ -29,11 +29,11 @@ def images_to_ts(images_folder, output_file, fps=25):
 
 
 # 输入的图片文件名模式（例如，img-%d.jpg 表示以 img- 为前缀，后面是递增的数字）
-images_folder = 'C:\\Users\keke\dev\Raspberry-Pi\ESP\\a0b765593494'
-# 输出的 TS 文件名
-output_file = 'output.ts'
-# 视频的帧率（可根据需要进行修改，默认为25）
-fps = 6
-
-# 将图片转换为 TS 格式的视频
-images_to_ts(images_folder, output_file, fps)
+# images_folder = 'C:\\Users\keke\dev\Raspberry-Pi\ESP\\a0b765593494'
+# # 输出的 TS 文件名
+# output_file = 'output.ts'
+# # 视频的帧率（可根据需要进行修改，默认为25）
+# fps = 6
+#
+# # 将图片转换为 TS 格式的视频
+# images_to_ts(images_folder, output_file, fps)

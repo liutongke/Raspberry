@@ -8,6 +8,8 @@
 @title: 
 """
 import time
-
+import os
+folder_path = 'tss'
+print(os.path.exists(folder_path))
 t = time.gmtime()
 print(t)
