@@ -27,7 +27,11 @@ class Wlan:
         # print("wifi", self.wlan.isconnected())
         ntptime.host = 'ntp1.aliyun.com'
         ntptime.settime()
+        # self.ap_open()
         return True
 
-    # def get_wlan_ip(self):
-    #     return self.ip
+    # 开启热点
+    def ap_open(self, ssid='Pico-w', password='123456789'):
+        ap = network.WLAN(network.AP_IF)
+        ap.config(essid=ssid, password=password)
+        ap.active(True)
