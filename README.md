@@ -638,7 +638,7 @@ sudo mount /dev/sda1 /media/keke/
 用UDP协议发送时，用sendto函数最大能发送数据的长度为：65535- IP头(20) - UDP头(8)＝65507字节
 
 # 通过docker安装srs4
-docker run --name srs4-v1 -itd -p 1935:1935 -p 1985:1985 -p 8080:8080 \
+docker run --name srs4-v1 -itd -p 1935:1935 -p 1985:1985 -p 8080:8080 --restart always \
     registry.cn-hangzhou.aliyuncs.com/ossrs/srs:4 ./objs/srs -c conf/docker.conf
 
 
@@ -658,3 +658,8 @@ docker run --name srs4-v1 -itd -p 1935:1935 -p 1985:1985 -p 8080:8080 \
 需要注意的是，HLS 的分片时长（通过 `-hls_time` 参数设置）也会影响 TS 文件之间的衔接效果。较短的分片时长可以提供更精确的衔接点，但也会增加播放列表（M3U8 文件）的大小和索引的复杂性。
 
 综上所述，确保相邻 TS 文件之间的时间戳连续、PTS 和 DTS 一致，并适当选择衔接点附近的 I 帧，可以实现较为平滑的 TS 文件衔接和连续播放。
+
+# python更换国内源
+```
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple/
+```

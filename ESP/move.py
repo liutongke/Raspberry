@@ -7,11 +7,6 @@
 @version：Python 3.11.2
 @title: 
 """
-# !/usr/bin/env python
-# coding: utf-8
-# @author: sSWans
-# @file: main.py
-# @time: 2018/1/11 15:54
 
 import cv2
 import numpy as np

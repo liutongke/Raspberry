@@ -7,7 +7,6 @@
 @version：Python 3.11.2
 @title: 
 """
-import machine
 import config
 
 

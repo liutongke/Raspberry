@@ -2,72 +2,55 @@
 # -*- coding: utf-8 -*-
 """
 @author:keke
-@file: raspi_send_cam.py
-@time: 2023/5/19 12:19
+@file: rtsp.py
+@time: 2023/5/21 15:53
 @version：Python 3.11.2
-@title: 树莓派通过udp发送照片
+@title: 
 """
 
-import subprocess as sp
 import socket
 import cv2
-import io
-from PIL import Image
-import numpy as np
 import time
 from PIL import Image
 import io
 import byte_stream
-import config
 
 
 def run():
-    cap = cv2.VideoCapture(0)
+    # RTSP流的URL
+    rtsp_url = "rtsp://192.168.1.100:8554/live"
+    cap = cv2.VideoCapture(rtsp_url)
 
     cap.set(3, 800)  # 摄像头采集图像的宽度320
     cap.set(4, 600)  # 摄像头采集图像的高度240
-    # cap.set(5, 30)  # 摄像头采集图像的帧率fps为30
+    cap.set(5, 10)  # 摄像头采集图像的帧率fps为30
 
     # 查看采集图像的参数
     print(cap.get(3))
     print(cap.get(4))
-    # print(cap.get(5))
+    print(cap.get(5))
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
     # 获取接收缓冲区大小
     recv_buffer_size = s.getsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF)
 
     # 获取发送缓冲区大小
     send_buffer_size = s.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF)
-    elapsed_time = 1 / 30
+    elapsed_time = 0.1
     # 打印接收缓冲区大小和发送缓冲区大小
     print("接收缓冲区大小:", recv_buffer_size)
     print("发送缓冲区大小:", send_buffer_size)
-    print(f'连接的服务器地址：{config.get_server_ip()},端口：{config.get_server_port()}')
     while True:
         ret, img = cap.read()
         # 将图像转换为JPEG数据流
         _, jpeg_frame = cv2.imencode('.jpg', img)
         jpeg_data = jpeg_frame.tobytes()
         ys_jpeg_data = compress_pic(jpeg_data)
-        # print("数据长度：", len(jpeg_data))
-        # print("压缩后数据长度：", len(ys_jpeg_data))
-        calculate_compression_ratio(len(jpeg_data), len(ys_jpeg_data))
+        print("数据长度：", len(jpeg_data))
+        print("压缩后数据长度：", len(ys_jpeg_data))
         send_data = byte_stream.encode_payload(ys_jpeg_data)
 
-        s.sendto(send_data, (config.get_server_ip(), config.get_server_port()))  # 向服务器发送图像数据
+        s.sendto(send_data, ("192.168.1.106", 9090))  # 向服务器发送图像数据
         time.sleep(elapsed_time)
-
-
-'''
-original_size 原始数据大小
-compressed_size 压缩后数据大小
-'''
-
-
-def calculate_compression_ratio(original_size, compressed_size):
-    compression_ratio = (original_size - compressed_size) / original_size * 100
-    # print("压缩率（百分比）: {:.2f}%".format(compression_ratio), f"原始尺寸:{original_size}",
-    #       f"压缩后尺寸:{compressed_size}")
 
 
 '''

@@ -16,7 +16,7 @@ def get_device_info():
 
 
 def get_device_id():
-    return 'RaspberryPi'
+    return 'chuizi'
 
 
 def is_byte_stream(obj):

@@ -19,3 +19,8 @@ def open_led():
 
 def close_led():
     return led.value(0)
+
+
+open_led()
+time.sleep(1)
+close_led()

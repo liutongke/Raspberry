@@ -1,20 +1,9 @@
+# update=1
+# 1更新0不更新 boot.py加载时候更新，MicroPython启动顺序boot.py->main.py
 import socket
 import network
 import camera
 import time
-import config
-import micro_byte_stream
-
-# 连接wifi
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-if not wlan.isconnected():
-    print('connecting to network...')
-    wlan.connect(config.get_wlan_ssid(), config.get_wlan_passwd())
-
-    while not wlan.isconnected():
-        pass
-print('网络配置:', wlan.ifconfig())
 
 # 摄像头初始化
 try:
@@ -23,14 +12,9 @@ except Exception as e:
     camera.deinit()
     camera.init(0, format=camera.JPEG)
 
-# 其他设置：
-# 上翻下翻
-camera.flip(1)
-# 左/右
-camera.mirror(1)
-
-# 分辨率
-camera.framesize(camera.FRAME_SVGA)
+camera.flip(1)  # 上翻下翻
+camera.mirror(1)  # 左/右
+camera.framesize(camera.FRAME_SVGA)  # 分辨率
 # 选项如下：
 # FRAME_96X96 FRAME_QQVGA FRAME_QCIF FRAME_HQVGA FRAME_240X240
 # FRAME_QVGA FRAME_CIF FRAME_HVGA FRAME_VGA FRAME_SVGA
@@ -39,8 +23,7 @@ camera.framesize(camera.FRAME_SVGA)
 # FRAME_P_FHD FRAME_QSXGA
 # 有关详细信息，请查看此链接：https://bit.ly/2YOzizz
 
-# 特效
-camera.speffect(camera.EFFECT_NONE)
+camera.speffect(camera.EFFECT_NONE)  # 特效
 # 选项如下：
 # 效果\无（默认）效果\负效果\ BW效果\红色效果\绿色效果\蓝色效果\复古效果
 # EFFECT_NONE (default) EFFECT_NEG \EFFECT_BW\ EFFECT_RED\ EFFECT_GREEN\ EFFECT_BLUE\ EFFECT_RETRO
@@ -72,11 +55,28 @@ camera.quality(10)
 # socket UDP 的创建
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, 0)
 
+
+def get_device_info():
+    device_id = 'a0b765593494'
+    return device_id, len(device_id)
+
+
+def encode_payload(payload):
+    device_id, device_id_len = get_device_info()
+    device_id_len_byte_data = device_id_len.to_bytes(4, 'big')  # 将整数转换为字节流
+    device_id_byte_data = bytes(device_id, 'utf-8')  # 将字符串转换为字节流
+    payload_byte_data = bytes(payload, 'utf-8')  # 将字符串转换为字节流
+
+    merged_data_stream = bytearray(device_id_len_byte_data) + bytearray(device_id_byte_data) + bytearray(
+        payload_byte_data)  # 合并字节流
+    return merged_data_stream
+
+
 try:
     while True:
         buf = camera.capture()  # 获取图像数据
-        s.sendto(micro_byte_stream.encode_payload(buf),
-                 (config.get_server_ip(), config.get_server_port()))  # 向服务器发送图像数据
+        s.sendto(encode_payload(buf),
+                 ("192.168.1.106", 9090))  # 向服务器发送图像数据
         time.sleep(0.1)
 except:
     pass
