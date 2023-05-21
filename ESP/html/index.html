@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>直播</title>
+    <!--    <script type="text/javascript" src="ckplayer/mpegts.js/mpegts.js"></script>-->
+    <script type="text/javascript" src="ckplayer/flv.js/flv.min.js"></script>
+    <script type="text/javascript" src="ckplayer/hls.js/hls.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="ckplayer/css/ckplayer.css"/>
+    <!--
+      如果需要使用其它语言，请在此处引入相应的js,比如:<script type="text/javascript" src="ckplayer/language/en.js" charset="UTF-8"></script>
+    -->
+    <script type="text/javascript" src="ckplayer/js/ckplayer.min.js" charset="UTF-8"></script>
+</head>
+<style>
+    .container {
+        display: flex;
+    }
+
+    .div1, .div2 {
+        flex: 1;
+        padding: 20px;
+        border: 1px solid black;
+    }
+</style>
+<body>
+<div class="container">
+    <div class="div1">
+        <!-- 第一个div的内容 -->
+        <div class="video" style="width: 100%; height: 500px;max-width: 800px;">播放容器</div>
+    </div>
+    <div class="div2">
+        <!-- 第二个div的内容 -->
+        <div class="video1" style="width: 100%; height: 500px;max-width: 800px;">播放容器2</div>
+    </div>
+</div>
+<script>
+    //调用开始
+    var videoObject = {
+        container: '.video', //视频容器
+        volume: 0.1,//默认音量，范围0-1
+        live: true,//指定为直播
+        autoplay: true,//自动播放
+        // crossOrigin:'*',//发送跨域信息，示例：Anonymous
+        // playbackrateOpen: true,//不显示倍速菜单
+        plug: 'flv.js',//设置使用flv插件
+        // video: "http://192.168.1.107:8080/live/keke.m3u8",
+        // video: "http://192.168.1.107:8080/live/esp32.m3u8",
+        video: "http://192.168.1.107:8080/live/esp32.flv",
+        // video: "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd",
+        // video: "http://192.168.1.106:9900/test.flv",
+        // video: "http://192.168.1.107:8080/live/keke.m3u8",
+        // video: "http://192.168.1.106:9900/video/images.m3u8",
+        // video: "rtmp://192.168.1.107:1935/live/keke",
+        // video: "http://192.168.1.107:8080/live/esp32.m3u8",
+        // video: "http://192.168.1.106:9900/video/jiankong.m3u8?random=12345",
+        // video: 'http://192.168.1.106/hls/keke.m3u8'
+        // video:'http://192.168.1.106:8887/live/test.flv'
+        // video:'http://192.168.1.106/rtmp/20210913_051621000_iOS.mp4'
+    };
+    var player = new ckplayer(videoObject)//调用播放器并赋值给变量player
+
+    var videoObject = {
+        container: '.video1', //视频容器
+        volume: 0.1,//默认音量，范围0-1
+        live: true,//指定为直播
+        autoplay: true,//自动播放
+        // crossOrigin:'*',//发送跨域信息，示例：Anonymous
+        // playbackrateOpen: true,//不显示倍速菜单
+        plug: 'flv.js',//设置使用flv插件
+        video: "http://192.168.1.107:8080/live/raspi-3b.flv",
+        // video: "http://192.168.1.107:8080/live/esp32.m3u8",
+        // video: "http://192.168.1.107:8080/live/esp32.flv",
+        // video: "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd",
+        // video: "http://192.168.1.106:9900/test.flv",
+        // video: "http://192.168.1.107:8080/live/keke.m3u8",
+        // video: "http://192.168.1.106:9900/video/images.m3u8",
+        // video: "rtmp://192.168.1.107:1935/live/keke",
+        // video: "http://192.168.1.107:8080/live/esp32.m3u8",
+        // video: "http://192.168.1.106:9900/video/jiankong.m3u8?random=12345",
+        // video: 'http://192.168.1.106/hls/keke.m3u8'
+        // video:'http://192.168.1.106:8887/live/test.flv'
+        // video:'http://192.168.1.106/rtmp/20210913_051621000_iOS.mp4'
+    };
+    var player = new ckplayer(videoObject)//调用播放器并赋值给变量player
+    /*
+     * ===============================================================================================
+     * 以上代码已完成调用演示，下方的代码是演示监听动作和外部控制的部分
+     * ===============================================================================================
+     * ===============================================================================================
+     */
+    player.play(function () {
+        document.getElementById('state').innerHTML = '监听到播放';
+    });
+    player.pause(function () {
+        document.getElementById('state').innerHTML = '监听到暂停';
+    });
+    player.volume(function (vol) {
+        document.getElementById('state').innerHTML = '监听到音量改变：' + vol;
+    });
+    player.muted(function (b) {
+        document.getElementById('state2').innerHTML = '监听到静音状态：' + b;
+    });
+    player.full(function (b) {
+        document.getElementById('state').innerHTML = '监听到全屏状态：' + b;
+    });
+    player.ended(function () {
+        document.getElementById('state').innerHTML = '监听到播放结束';
+    });
+</script>
+<p>官网：<a href="https://www.ckplayer.com" target="_blank">www.ckplayer.com</a></p>
+<p>手册：<a href="https://www.ckplayer.com/manual/" target="_blank">www.ckplayer.com/manual/</a></p>
+<p>社区：<a href="https://bbs.ckplayer.com/" target="_blank">bbs.ckplayer.com</a></p>
+<p>控制示例：</p>
+<p>
+    <button type="button" onclick="player.play()">播放</button>
+    <button type="button" onclick="player.pause()">暂停</button>
+    <button type="button" onclick="player.seek(20)">跳转</button>
+    <button type="button" onclick="player.volume(0.6)">修改音量</button>
+    <button type="button" onclick="player.muted()">静音</button>
+    <button type="button" onclick="player.exitMuted()">恢复音量</button>
+    <button type="button" onclick="player.full()">全屏</button>
+    <button type="button" onclick="player.webFull()">页面全屏</button>
+    <button type="button" onclick="player.theatre()">剧场模式</button>
+    <button type="button" onclick="player.exitTheatre()">退出剧场模式</button>
+</p>
+<p id="state"></p>
+<p id="state2"></p>
+</body>
+</html>
