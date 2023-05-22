@@ -1,1 +1,0 @@
-start /B python ./monitor_server_center.py > output.log 2>&1

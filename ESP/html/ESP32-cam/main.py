@@ -77,7 +77,7 @@ try:
         buf = camera.capture()  # 获取图像数据
         s.sendto(encode_payload(buf),
                  ("192.168.1.106", 9090))  # 向服务器发送图像数据
-        time.sleep(0.1)
+        time.sleep(0.15)
 except:
     pass
 finally:

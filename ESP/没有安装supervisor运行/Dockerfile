@@ -17,4 +17,3 @@ COPY . .
 
 CMD [ "python3", "./monitor_server_center.py" ]
 
-
