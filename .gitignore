@@ -21,3 +21,5 @@
 /ESP/__pycache__
 /ESP/html/config.py
 /ESP/usercenter_stdout.log
+/ESP/tools/__pycache__
+/ESP/monitor/__pycache__
