@@ -17,14 +17,13 @@ import time
 import cv2
 import io
 import os
+import tools
 
 
-def rtmp_consumer(queue, p):
+def save_video(queue, video_queue, device_id):
     while True:
         item = queue.get()
-        # if item is None:
-        #     break
-        p.stdin.write(item.tobytes())  # 管道推流
+        video_queue.write(item['img'])
 
 
 def save_image(queue):
@@ -35,11 +34,6 @@ def save_image(queue):
         # saveFile = 'images/' + str(addr) + '.jpg'
         addr = item['addr']
         img3 = item['img']
-        result = addr.split('/')[0]
-        mkdir(result)
+        # result = addr.split('/')[0]
+        tools.mkdirs(tools.get_dir_path(addr))
         cv2.imwrite(addr, img3)  # 保存图像文件
-
-
-def mkdir(filename):
-    if not os.path.exists(filename):  # 判断所在目录下是否有该文件名的文件夹
-        os.mkdir(filename)  # 创建多级目录用mkdirs，单击目录mkdir

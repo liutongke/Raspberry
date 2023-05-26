@@ -8,6 +8,8 @@
 @title: 
 """
 import re
+import datetime
+import os
 
 
 # true存在 false不存在
@@ -39,3 +41,40 @@ def get_tm_str():
 
     current_time = datetime.now()
     return current_time.strftime("%Y-%m-%d %H:%M:%S")
+
+
+# 获取上一个小时的id
+def get_prev_hour_id() -> str:
+    # 获取当前时间
+    current_time = datetime.datetime.now()
+
+    # 获取上一个小时的时间
+    previous_hour = current_time - datetime.timedelta(hours=1)
+
+    # 输出上一个小时的时间
+    # print(previous_hour)
+
+    # 格式化上一个小时的时间
+    formatted_time = previous_hour.strftime("%Y%m%d%H")
+
+    # 输出格式化后的时间
+    # print(formatted_time)
+    return formatted_time
+
+
+def get_dir_path(file_path: str) -> str:
+    # 使用 os.path.dirname() 获取文件所在目录的路径
+    directory_path = os.path.dirname(file_path)
+    return directory_path
+
+
+def mkdir(filename: str):
+    if not os.path.exists(filename):  # 判断所在目录下是否有该文件名的文件夹
+        os.mkdir(filename)  # 创建多级目录用mkdirs，单击目录mkdir
+
+
+def mkdirs(path: str):
+    # 验证目录是否创建成功
+    if not os.path.isdir(path):
+        # 使用 os.makedirs() 创建多级目录
+        os.makedirs(path)
