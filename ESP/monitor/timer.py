@@ -15,20 +15,31 @@ import os
 import cv2
 import datetime
 import tools
+import config
 
 
 def job():
     # 在这里编写你要执行的任务代码
     print("执行定时任务")
-    images_to_video('/var/www/html/monitor/a0b765593494', '/var/www/html/monitor/output.mp4', 6)
+
+    for device_id, value in config.cam_param().items():
+        folder_path = f'{os.getcwd()}/images/{device_id}/{tools.get_prev_hour_id()}'
+        # print(folder_path)
+        # print(os.path.exists(folder_path))
+        if os.path.exists(folder_path):
+            mp4_path = f'video/{device_id}/{tools.get_prev_hour_id()}.mp4'
+            if tools.mkdirs(tools.get_dir_path(mp4_path)):
+                images_to_video(folder_path, mp4_path, 6)
 
 
 # 定义整点执行任务的函数
 def run_task():
     # 获取当前时间
-    current_time = time.strftime("%H:%M:%S", time.localtime())
+    current_time = time.strftime("%H:%M", time.localtime())
     print(current_time)
-    job()
+    # 判断当前时间是否为整点，如果是，则执行任务,图片合成视频，每个小时执行一次即可
+    if current_time.endswith(":01"):
+        job()
 
 
 def images_to_video(image_folder, output_file, fps=6):
@@ -54,6 +65,7 @@ def images_to_video(image_folder, output_file, fps=6):
 
 
 def main():
+    print("启动定时任务")
     # 使用 schedule 模块来设置每分钟执行一次 run_task() 函数
     schedule.every(1).minutes.do(run_task)
 
@@ -62,23 +74,6 @@ def main():
         schedule.run_pending()
         time.sleep(1)
 
-
-if __name__ == '__main__':
-    import os
-
-    # 使用 os.getcwd() 获取当前目录
-    current_directory = os.getcwd()
-    device_id = "123"
-    path = f'{device_id}/{tools.get_prev_hour_id()}/'
-    os.makedirs(path)
-    # 打印当前目录
-    print("当前目录：", path, current_directory)
-
-    import os
-
-    file_path = "/html/monitor/1.jpg"
-
-
-
-    # 打印目录路径
-    print("目录路径：", directory_path)
+# if __name__ == '__main__':
+#     current_time = time.strftime("%H:%M", time.localtime())
+#     print(current_time)

@@ -82,7 +82,8 @@ class PicHandler:
 
             if config.is_open_save_pic():
                 img_queue.put(
-                    {'addr': f'{device_id}/{tools.get_prev_hour_id()}/' + str(shared_dict[device_id]) + '.jpg',
+                    {'addr': f'{os.getcwd()}/images/{device_id}/{tools.get_now_hour_id()}/' + str(
+                        shared_dict[device_id]) + '.jpg',
                      'img': img})  # 保存图片
 
             # if config.is_open_save_video():

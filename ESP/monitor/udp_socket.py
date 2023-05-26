@@ -50,7 +50,7 @@ class UdpSocket:
         # 判断是否成功启动
         try:
             server_sock.getsockname()
-            print("UDP启动成功-prot:6000")
+            print("UDP启动成功-prot:9090")
         except socket.error:
             print("UDP服务器启动失败")
 

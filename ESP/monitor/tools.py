@@ -43,6 +43,17 @@ def get_tm_str():
     return current_time.strftime("%Y-%m-%d %H:%M:%S")
 
 
+# 获取当前小时id
+def get_now_hour_id() -> str:
+    # 获取当前时间
+    current_time = datetime.datetime.now()
+
+    # 获取当前小时
+    current_hour = current_time.strftime("%Y%m%d%H")
+
+    return current_hour
+
+
 # 获取上一个小时的id
 def get_prev_hour_id() -> str:
     # 获取当前时间
@@ -73,8 +84,9 @@ def mkdir(filename: str):
         os.mkdir(filename)  # 创建多级目录用mkdirs，单击目录mkdir
 
 
-def mkdirs(path: str):
+def mkdirs(path: str) -> bool:
     # 验证目录是否创建成功
     if not os.path.isdir(path):
         # 使用 os.makedirs() 创建多级目录
         os.makedirs(path)
+    return True

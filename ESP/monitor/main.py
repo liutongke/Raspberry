@@ -27,6 +27,7 @@ import io
 import os
 import queue_handler
 import pic_handler
+import timer
 
 if __name__ == "__main__":
     manager = Manager()
@@ -57,6 +58,8 @@ if __name__ == "__main__":
     num_cores = cpu_count()
     print("Number of CPU cores:", num_cores)
 
+    process_timer = Process(target=timer.main, args=())
+    process_timer.start()
     process_udp = Process(target=udp_socket.UdpSocket().udp, args=(p_queue_dict,))
     process_tcp = Process(target=tcp_socket.TcpSocket().tcp, args=(shared_dict,))
 
