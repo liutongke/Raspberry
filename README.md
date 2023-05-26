@@ -638,9 +638,10 @@ sudo mount /dev/sda1 /media/keke/
 用UDP协议发送时，用sendto函数最大能发送数据的长度为：65535- IP头(20) - UDP头(8)＝65507字节
 
 # 通过docker安装srs4
+```
 docker run --name srs4-v1 -itd -p 1935:1935 -p 1985:1985 -p 8080:8080 --restart always \
     registry.cn-hangzhou.aliyuncs.com/ossrs/srs:4 ./objs/srs -c conf/docker.conf
-
+```
 
 
 # 两个TS视频文件能够连续播放的条件
@@ -663,3 +664,5 @@ docker run --name srs4-v1 -itd -p 1935:1935 -p 1985:1985 -p 8080:8080 --restart 
 ```
 pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple/
 ```
+
+

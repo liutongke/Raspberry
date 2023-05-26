@@ -26,7 +26,7 @@ def run():
 
     cap.set(3, 800)  # 摄像头采集图像的宽度320
     cap.set(4, 600)  # 摄像头采集图像的高度240
-    # cap.set(5, 30)  # 摄像头采集图像的帧率fps为30
+    cap.set(5, 10)  # 摄像头采集图像的帧率fps为30
 
     # 查看采集图像的参数
     print(cap.get(3))
@@ -38,7 +38,7 @@ def run():
 
     # 获取发送缓冲区大小
     send_buffer_size = s.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF)
-    elapsed_time = 1 / 30
+    elapsed_time = 1 / 10
     # 打印接收缓冲区大小和发送缓冲区大小
     print("接收缓冲区大小:", recv_buffer_size)
     print("发送缓冲区大小:", send_buffer_size)

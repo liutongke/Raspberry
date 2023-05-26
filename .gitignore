@@ -23,3 +23,6 @@
 /ESP/usercenter_stdout.log
 /ESP/tools/__pycache__
 /ESP/monitor/__pycache__
+/ESP/monitor/config.py
+/ESP/monitor/images
+/ESP/monitor/video

@@ -11,7 +11,7 @@ RUN apt-get install python3 python3-dev -y
 RUN python3 --version
 RUN apt-get install python3-pip -y
 RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple/
-RUN pip install --no-cache-dir Pillow==9.5.0 numpy==1.24.2  opencv-python==4.7.0.72
+RUN pip install --no-cache-dir Pillow==9.5.0 numpy==1.24.2  opencv-python==4.7.0.72 schedule==1.2.0 natsort==8.3.1
 
 COPY . .
 

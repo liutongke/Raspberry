@@ -9,7 +9,7 @@ import micro_byte_stream
 
 def downloads():
     # 下载文件的URL
-    url = "http://192.168.1.106:9900/main.py"
+    url = "http://192.168.1.106:9900/ESP32-cam/main.py"
 
     # 发送GET请求并获取响应
     response = urequests.get(url)

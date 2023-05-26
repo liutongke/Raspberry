@@ -15,13 +15,13 @@ except Exception as e:
 camera.flip(1)  # 上翻下翻
 camera.mirror(1)  # 左/右
 camera.framesize(camera.FRAME_SVGA)  # 分辨率
-# 选项如下：
+# The options are the following:
 # FRAME_96X96 FRAME_QQVGA FRAME_QCIF FRAME_HQVGA FRAME_240X240
 # FRAME_QVGA FRAME_CIF FRAME_HVGA FRAME_VGA FRAME_SVGA
 # FRAME_XGA FRAME_HD FRAME_SXGA FRAME_UXGA FRAME_FHD
 # FRAME_P_HD FRAME_P_3MP FRAME_QXGA FRAME_QHD FRAME_WQXGA
 # FRAME_P_FHD FRAME_QSXGA
-# 有关详细信息，请查看此链接：https://bit.ly/2YOzizz
+# Check this link for more information: https://bit.ly/2YOzizz
 
 camera.speffect(camera.EFFECT_NONE)  # 特效
 # 选项如下：
@@ -77,7 +77,7 @@ try:
         buf = camera.capture()  # 获取图像数据
         s.sendto(encode_payload(buf),
                  ("192.168.1.106", 9090))  # 向服务器发送图像数据
-        time.sleep(0.15)
+        time.sleep(0.1)
 except:
     pass
 finally:

@@ -10,7 +10,7 @@ RUN apt-get install libgl1-mesa-glx libglib2.0-0 ffmpeg -y
 RUN apt-get install supervisor -y
 RUN apt-get install python3 python3-dev python3-pip -y
 RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple/
-RUN pip install --no-cache-dir Pillow==9.5.0 numpy==1.24.2  opencv-python==4.7.0.72 schedule==1.2.0 natsort==8.3.1
+RUN pip install --no-cache-dir Pillow==9.5.0 numpy==1.24.2  opencv-python==4.7.0.72
 COPY ./monitor_server_center.conf /etc/supervisor/conf.d/
 #看需求是否将运行程序复制进容器中,不复制的话在创建时候需要-v绑定文件夹
 #COPY . .
