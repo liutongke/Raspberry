@@ -26,4 +26,4 @@ CMD [ "supervisord" , "-n", "-c", "/etc/supervisor/supervisord.conf" ]
 
 
 # 下载所依赖的模块
-RUN #go mod download
+#RUN go mod download
