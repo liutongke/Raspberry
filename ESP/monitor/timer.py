@@ -49,10 +49,15 @@ def images_to_video(image_folder, output_file, fps=6):
     # 读取第一张图片，获取图片的宽度和高度
     first_image = cv2.imread(os.path.join(image_folder, image_files[0]))
     height, width, _ = first_image.shape
-
+    # 通过调整比特率可以增加视频的质量，但会增加视频文件的大小
+    # H.264编码器（常用于MP4格式）：一般比特率范围为1000-8000 kbps。
+    # MPEG-4编码器：一般比特率范围为500-2000 kbps。
+    # VP8编码器（常用于WebM格式）：一般比特率范围为200-4000 kbps。
+    # VP9编码器：一般比特率范围为200-6000 kbps。
+    bitrate = 2000
     # 创建视频写入器对象
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # 使用指定的编解码器（此处为 MP4）
-    video_writer = cv2.VideoWriter(output_file, fourcc, fps, (width, height))
+    video_writer = cv2.VideoWriter(output_file, fourcc, fps, (width, height), bitrate)
 
     # 遍历排序后的图片列表，将每张图片写入视频帧中
     for image_file in image_files:
@@ -75,5 +80,6 @@ def main():
         time.sleep(1)
 
 # if __name__ == '__main__':
+#     images_to_video("images/a0b765593494/2023052701", 'test.mp4', 6)
 #     current_time = time.strftime("%H:%M", time.localtime())
 #     print(current_time)
