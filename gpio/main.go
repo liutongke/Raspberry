@@ -1,18 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
-	"io"
+	"monitor/nvr/utils"
 	"net"
-	"os/exec"
 )
-
-type Ch struct {
-	DeviceId string
-	Data     []byte
-}
 
 func decodePayload(byte_data []byte) (string, []byte) {
 	// 将字节流转换为int32
@@ -26,8 +19,8 @@ func decodePayload(byte_data []byte) (string, []byte) {
 
 // UDP server端
 func main() {
-	ch := make(chan Ch, 1000)
-	go rtmp_steam_push(ch)
+	ch := make(chan utils.Ch, 1000)
+	go utils.RtmpSteamPush(ch)
 
 	listen, err := net.ListenUDP("udp", &net.UDPAddr{
 		IP:   net.IPv4(0, 0, 0, 0),
@@ -47,7 +40,7 @@ func main() {
 		}
 
 		deviceId, byte_data := decodePayload(data[:n])
-		ch <- Ch{
+		ch <- utils.Ch{
 			DeviceId: deviceId,
 			Data:     byte_data,
 		}
@@ -59,60 +52,4 @@ func main() {
 		//	continue
 		//}
 	}
-}
-func rtmp_steam_push(ch chan Ch) {
-	rtmpURL := "rtmp://192.168.1.107:1935/live/go1"
-
-	// 创建FFmpeg命令
-	ffmpegCmd := exec.Command("ffmpeg",
-		"-y",
-		"-f", "image2pipe",
-		"-c:v", "mjpeg",
-		"-r", "6", // 设置帧率
-		"-i", "-",
-		"-c:v", "libx264",
-		"-pix_fmt", "yuv420p",
-		"-f", "flv",
-		rtmpURL,
-	)
-
-	// 获取FFmpeg命令的标准输入管道
-	pipeIn, err := ffmpegCmd.StdinPipe()
-	if err != nil {
-		fmt.Println("Error getting FFmpeg stdin pipe:", err)
-		return
-	}
-
-	// 启动FFmpeg进程
-	err = ffmpegCmd.Start()
-	if err != nil {
-		fmt.Println("Error starting FFmpeg:", err)
-		return
-	}
-
-	// 逐个推送图片帧
-	for {
-		select {
-		case v := <-ch:
-			// 将图片数据写入FFmpeg的标准输入管道
-			_, err = io.Copy(pipeIn, bytes.NewReader(v.Data))
-			if err != nil {
-				fmt.Println("Error writing image data to FFmpeg:", err)
-				continue
-			}
-			fmt.Printf("DeviceId:%s time:%s \n", v.DeviceId, GetNowStr())
-			// 等待一段时间，模拟帧率
-			//time.Sleep(time.Second / 10)
-		}
-	}
-
-	// 关闭FFmpeg的标准输入管道，等待推流操作完成
-	pipeIn.Close()
-	err = ffmpegCmd.Wait()
-	if err != nil {
-		fmt.Println("Error waiting for FFmpeg:", err)
-		return
-	}
-
-	fmt.Println("Image frames streamed successfully.")
 }

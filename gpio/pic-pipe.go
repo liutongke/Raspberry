@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"monitor/nvr/utils"
 	"os"
 	"os/exec"
 	"time"
@@ -13,7 +14,7 @@ func main() {
 	rtmpURL := "rtmp://192.168.1.107:1935/live/go1"
 
 	// 获取图片文件列表
-	imageFiles, err := getImageFiles(imageFolder)
+	imageFiles, err := utils.GetImageFiles(imageFolder)
 	if err != nil {
 		fmt.Println("Error getting image files:", err)
 		return
