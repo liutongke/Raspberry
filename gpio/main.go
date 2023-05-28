@@ -19,8 +19,14 @@ func decodePayload(byte_data []byte) (string, []byte) {
 
 // UDP server端
 func main() {
-	ch := make(chan utils.Ch, 1000)
-	go utils.RtmpSteamPush(ch)
+	camList := utils.CamParam()
+	chContainer := make(map[string]chan utils.Ch, len(camList))
+
+	for deviceId, cam := range camList {
+		ch := make(chan utils.Ch, 1000)
+		chContainer[deviceId] = ch
+		go utils.RtmpSteamPush(ch, cam)
+	}
 
 	listen, err := net.ListenUDP("udp", &net.UDPAddr{
 		IP:   net.IPv4(0, 0, 0, 0),
@@ -40,7 +46,7 @@ func main() {
 		}
 
 		deviceId, byte_data := decodePayload(data[:n])
-		ch <- utils.Ch{
+		chContainer[deviceId] <- utils.Ch{
 			DeviceId: deviceId,
 			Data:     byte_data,
 		}

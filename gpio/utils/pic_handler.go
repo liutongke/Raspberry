@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"strconv"
 )
 
 type Ch struct {
@@ -12,18 +13,16 @@ type Ch struct {
 	Data     []byte
 }
 
-func RtmpSteamPush(ch chan Ch) {
-	rtmpURL := "rtmp://192.168.1.107:1935/live/go1"
-
+func RtmpSteamPush(ch chan Ch, cam Cam) {
 	// 创建FFmpeg命令
 	ffmpegCmd := exec.Command("ffmpeg",
 		"-y",
 		"-f", "image2pipe",
 		"-c:v", "mjpeg",
-		"-r", "6", // 设置帧率
+		"-r", strconv.Itoa(cam.Fps), // 设置帧率
 		"-i", "-",
-		//"-s", fmt.Sprintf("%dx%d", 800, 600),
-		"-s", "800x600",
+		"-s", fmt.Sprintf("%dx%d", cam.Width, cam.Height),
+		//"-s", "800x600",
 		"-b:v", "2M",
 		"-g", "5",
 		"-bf", "0",
@@ -31,7 +30,7 @@ func RtmpSteamPush(ch chan Ch) {
 		"-pix_fmt", "yuv420p",
 		"-preset", "ultrafast",
 		"-f", "flv",
-		rtmpURL,
+		cam.RtmpUrl,
 	)
 
 	// 获取FFmpeg命令的标准输入管道
