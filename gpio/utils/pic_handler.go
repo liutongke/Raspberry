@@ -11,9 +11,10 @@ import (
 type Ch struct {
 	DeviceId string
 	Data     []byte
+	Break    bool
 }
 
-func RtmpSteamPush(ch chan Ch, cam Cam) {
+func RtmpSteamPush(ch chan *Ch, cam Cam) {
 	// 创建FFmpeg命令
 	ffmpegCmd := exec.Command("ffmpeg",
 		"-y",
@@ -51,6 +52,10 @@ func RtmpSteamPush(ch chan Ch, cam Cam) {
 	for {
 		select {
 		case v := <-ch:
+			if v.Break { //结束
+				goto stopFfmpeg
+			}
+			//fmt.Println("pic_handler: ", v.DeviceId)
 			// 将图片数据写入FFmpeg的标准输入管道
 			b, err := MakeWaterMarkerTobyte(v.Data, GetNowStr())
 			if err != nil {
@@ -61,19 +66,21 @@ func RtmpSteamPush(ch chan Ch, cam Cam) {
 				fmt.Println("Error writing image data to FFmpeg:", err)
 				continue
 			}
-			fmt.Printf("DeviceId:%s time:%s \n", v.DeviceId, GetNowStr())
+			//fmt.Printf("DeviceId:%s time:%s \n", v.DeviceId, GetNowStr())
+
 			// 等待一段时间，模拟帧率
 			//time.Sleep(time.Second / 10)
 		}
 	}
 
+stopFfmpeg:
 	// 关闭FFmpeg的标准输入管道，等待推流操作完成
-	//pipeIn.Close()
-	//err = ffmpegCmd.Wait()
-	//if err != nil {
-	//	fmt.Println("Error waiting for FFmpeg:", err)
-	//	return
-	//}
-	//
-	//fmt.Println("Image frames streamed successfully.")
+	pipeIn.Close()
+	err = ffmpegCmd.Wait()
+	if err != nil {
+		fmt.Println("Error waiting for FFmpeg:", err)
+		return
+	}
+
+	fmt.Println("Image frames streamed successfully.")
 }

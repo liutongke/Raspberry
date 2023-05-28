@@ -1,8 +1,11 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
+	"image/jpeg"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -66,4 +69,27 @@ func GetImageFiles(folderPath string) ([]string, error) {
 	}
 
 	return imageFiles, nil
+}
+
+// 获取11位unix时间戳
+func GetTime() int64 {
+	// 获取当前时间
+	currentTime := time.Now()
+
+	// 获取11位的Unix时间戳（秒级）
+	unixTimestamp := currentTime.Unix()
+
+	//fmt.Println(unixTimestamp)
+	return unixTimestamp
+	//return strconv.FormatInt(unixTimestamp, 10)
+}
+
+// CheckJPEGValidity 检测 JPEG 二进制流的正确性
+func CheckJPEGValidity(data []byte) bool {
+	_, err := jpeg.DecodeConfig(bytes.NewReader(data))
+	if err != nil {
+		log.Println("Invalid JPEG format:", err)
+		return false
+	}
+	return true
 }

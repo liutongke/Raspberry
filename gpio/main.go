@@ -19,14 +19,17 @@ func decodePayload(byte_data []byte) (string, []byte) {
 
 // UDP server端
 func main() {
-	camList := utils.CamParam()
-	chContainer := make(map[string]chan utils.Ch, len(camList))
+	hub := utils.StartClientHub()
 
-	for deviceId, cam := range camList {
-		ch := make(chan utils.Ch, 1000)
-		chContainer[deviceId] = ch
-		go utils.RtmpSteamPush(ch, cam)
-	}
+	go utils.PingTimer(hub) //启动定时任务
+	//camList := utils.CamParam()
+	//chContainer := make(map[string]chan utils.Ch, len(camList))
+	//
+	//for deviceId, cam := range camList {
+	//	ch := make(chan utils.Ch, 1000)
+	//	chContainer[deviceId] = ch
+	//	go utils.RtmpSteamPush(ch, cam)
+	//}
 
 	listen, err := net.ListenUDP("udp", &net.UDPAddr{
 		IP:   net.IPv4(0, 0, 0, 0),
@@ -36,6 +39,7 @@ func main() {
 		fmt.Println("listen failed, err:", err)
 		return
 	}
+	fmt.Println("udp server start success")
 	defer listen.Close()
 	for {
 		var data [65535]byte
@@ -45,11 +49,16 @@ func main() {
 			continue
 		}
 
-		deviceId, byte_data := decodePayload(data[:n])
-		chContainer[deviceId] <- utils.Ch{
+		deviceId, byteData := decodePayload(data[:n])
+		//fmt.Printf("udp accept:%s \n", deviceId)
+		hub.Ch <- &utils.Ch{
 			DeviceId: deviceId,
-			Data:     byte_data,
+			Data:     byteData,
 		}
+		//chContainer[deviceId] <- utils.Ch{
+		//	DeviceId: deviceId,
+		//	Data:     byte_data,
+		//}
 		//fmt.Println(deviceId)
 		//fmt.Printf("data:%v addr:%v count:%v\n", string(data[:n]), addr, n)
 		//_, err = listen.WriteToUDP(data[:n], addr) // 发送数据
