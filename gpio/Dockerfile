@@ -18,12 +18,15 @@ RUN apt-get install python3 python3-dev python3-pip -y
 RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple/
 RUN pip install --no-cache-dir Pillow==9.5.0 numpy==1.24.2  opencv-python==4.7.0.72 schedule==1.2.0 natsort==8.3.1
 
-#COPY ./monitor_server_center.conf /etc/supervisor/conf.d/
+COPY ./monitor_server_center.conf /etc/supervisor/conf.d/
 #看需求是否将运行程序复制进容器中,不复制的话在创建时候需要-v绑定文件夹
-#COPY . .
-#-n 是 supervisord 命令的一个选项，它表示以非守护进程模式（non-daemon mode）运行 supervisord。
-CMD [ "supervisord" , "-n", "-c", "/etc/supervisor/supervisord.conf" ]
-
+COPY . .
 
 # 下载所依赖的模块
-#RUN go mod download
+RUN go mod download
+
+# 将我们的代码编译成二进制可执行文件main
+RUN go build -o main .
+
+#-n 是 supervisord 命令的一个选项，它表示以非守护进程模式（non-daemon mode）运行 supervisord。
+CMD [ "supervisord" , "-n", "-c", "/etc/supervisor/supervisord.conf" ]
