@@ -5,54 +5,30 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"log"
-	"math/rand"
 	"net"
-	"os"
 	"os/exec"
-	"strconv"
-	"time"
 )
 
-func get_rand_num() string {
-	// 设置随机种子，一般使用当前时间的纳秒数
-	rand.Seed(time.Now().UnixNano())
-
-	// 生成一个0到100之间的随机整数
-	randomNumber := rand.Intn(101)
-	//fmt.Println("Random number:", randomNumber)
-	return strconv.Itoa(randomNumber)
+type Ch struct {
+	DeviceId string
+	Data     []byte
 }
 
-func save_pic(byte_data []byte) {
-	err := ioutil.WriteFile("images/"+get_rand_num()+".jpg", byte_data, 0644)
-	if err != nil {
-		fmt.Println("Failed to save image:", err)
-		os.Exit(1)
-	}
-}
-func decode_payload(byte_data []byte) (string, []byte) {
+func decodePayload(byte_data []byte) (string, []byte) {
 	// 将字节流转换为int32
 	value := int32(binary.BigEndian.Uint32(byte_data[:4]))
 	//fmt.Println(value) // 输出: 1
 	device_id := string(byte_data[4 : 4+value])
 	//fmt.Println(str)
 
-	//err := ioutil.WriteFile("images/"+get_rand_num()+".jpg", byte_data[4+value:], 0644)
-	//if err != nil {
-	//	fmt.Println("Failed to save image:", err)
-	//	os.Exit(1)
-	//}
-	//
-	//fmt.Println("Image saved successfully.")
 	return device_id, byte_data[4+value:]
 }
 
 // UDP server端
 func main() {
-	ch := make(chan []byte)
-	go ffmpeg(ch)
+	ch := make(chan Ch, 1000)
+	go rtmp_steam_push(ch)
+
 	listen, err := net.ListenUDP("udp", &net.UDPAddr{
 		IP:   net.IPv4(0, 0, 0, 0),
 		Port: 9090,
@@ -63,15 +39,19 @@ func main() {
 	}
 	defer listen.Close()
 	for {
-		var data [100000]byte
+		var data [65535]byte
 		n, _, err := listen.ReadFromUDP(data[:]) // 接收数据
 		if err != nil {
 			fmt.Println("read udp failed, err:", err)
 			continue
 		}
-		img := data[:n]
-		_, img = decode_payload(img)
-		ch <- img
+
+		deviceId, byte_data := decodePayload(data[:n])
+		ch <- Ch{
+			DeviceId: deviceId,
+			Data:     byte_data,
+		}
+		//fmt.Println(deviceId)
 		//fmt.Printf("data:%v addr:%v count:%v\n", string(data[:n]), addr, n)
 		//_, err = listen.WriteToUDP(data[:n], addr) // 发送数据
 		//if err != nil {
@@ -80,93 +60,59 @@ func main() {
 		//}
 	}
 }
+func rtmp_steam_push(ch chan Ch) {
+	rtmpURL := "rtmp://192.168.1.107:1935/live/go1"
 
-func ffmpeg(ch chan []byte) {
+	// 创建FFmpeg命令
 	ffmpegCmd := exec.Command("ffmpeg",
 		"-y",
-		"-re",
-		"-f", "rawvideo",
-		"-vcodec", "rawvideo",
-		"-pix_fmt", "bgr24",
-		"-s", "800x600", // 设置视频宽高，这里假设宽高为640x480
-		"-r", "6", // 设置帧率，这里假设为6帧/秒
+		"-f", "image2pipe",
+		"-c:v", "mjpeg",
+		"-r", "6", // 设置帧率
 		"-i", "-",
 		"-c:v", "libx264",
-		"-b:v", "2M",
-		"-g", "5",
-		"-bf", "0",
 		"-pix_fmt", "yuv420p",
-		"-preset", "ultrafast",
 		"-f", "flv",
-		"rtmp://192.168.1.107:1935/live/go1") // 替换为实际的RTMP服务器地址
+		rtmpURL,
+	)
 
-	inputPipe, err := ffmpegCmd.StdinPipe()
+	// 获取FFmpeg命令的标准输入管道
+	pipeIn, err := ffmpegCmd.StdinPipe()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error getting FFmpeg stdin pipe:", err)
+		return
 	}
 
+	// 启动FFmpeg进程
 	err = ffmpegCmd.Start()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error starting FFmpeg:", err)
+		return
 	}
 
+	// 逐个推送图片帧
 	for {
-		v, ok := <-ch
-		if !ok {
-			fmt.Println("通道已关闭")
-			break
-		}
-		fmt.Println(get_rand_num())
-		_, err = io.Copy(inputPipe, bytes.NewReader(v))
-		save_pic(v)
-		if err != nil {
-			fmt.Print(err)
+		select {
+		case v := <-ch:
+			// 将图片数据写入FFmpeg的标准输入管道
+			_, err = io.Copy(pipeIn, bytes.NewReader(v.Data))
+			if err != nil {
+				fmt.Println("Error writing image data to FFmpeg:", err)
+				continue
+			}
+			fmt.Printf("DeviceId:%s time:%s \n", v.DeviceId, GetNowStr())
+			// 等待一段时间，模拟帧率
+			//time.Sleep(time.Second / 10)
 		}
 	}
-	//_, err = io.Copy(inputPipe, imageFile)
-	//if err != nil {
-	//	return err
-	//}
-	//imageFolder := "/" // 图片文件夹路径
-	//imageFiles := []string{
-	//	"image1.jpg",
-	//	"image2.jpg",
-	//	"image3.jpg",
-	//	// 添加更多的图片文件
-	//}
 
-	//for _, imageFile := range imageFiles {
-	//	imagePath := imageFolder + "/" + imageFile
-	//	err = pushImage(inputPipe, imagePath)
-	//	if err != nil {
-	//		log.Fatal(err)
-	//	}
-	//}
-
-	err = inputPipe.Close()
-	if err != nil {
-		log.Fatal(err)
-	}
-
+	// 关闭FFmpeg的标准输入管道，等待推流操作完成
+	pipeIn.Close()
 	err = ffmpegCmd.Wait()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println("Error waiting for FFmpeg:", err)
+		return
 	}
 
-	log.Println("Streaming completed.")
+	fmt.Println("Image frames streamed successfully.")
 }
-
-//func pushImage(inputPipe *io.WriteCloser, imagePath string) error {
-//	imageFile, err := os.Open(imagePath)
-//	if err != nil {
-//		return err
-//	}
-//	defer imageFile.Close()
-//
-//	_, err = io.Copy(inputPipe, imageFile)
-//	if err != nil {
-//		return err
-//	}
-//
-//	return nil
-//}

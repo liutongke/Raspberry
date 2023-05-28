@@ -5,7 +5,6 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"time"
 )
 
@@ -77,34 +76,4 @@ func main() {
 	}
 
 	fmt.Println("Image frames streamed successfully.")
-}
-
-// 获取指定文件夹下的图片文件列表
-func getImageFiles(folderPath string) ([]string, error) {
-	var imageFiles []string
-
-	// 遍历文件夹中的文件
-	err := filepath.Walk(folderPath, func(path string, info os.FileInfo, err error) error {
-		// 如果是文件且是图片文件，则将其添加到列表中
-		if !info.IsDir() && isImageFile(path) {
-			imageFiles = append(imageFiles, path)
-		}
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return imageFiles, nil
-}
-
-// 检查文件是否为图片文件
-func isImageFile(filePath string) bool {
-	extension := filepath.Ext(filePath)
-	switch extension {
-	case ".jpg", ".jpeg", ".png", ".gif":
-		return true
-	}
-	return false
 }
