@@ -129,6 +129,7 @@ class PicHandler:
             handler_water_pid = "handler_water_pid :%s" % (str(os.getpid()))
             hanlder_upd = "udp pid :%s udp process num:%s" % (
                 str(pid), str(process_num))
+            # RGBA 值：BGR（蓝绿红）
             cv2.putText(blank_img, text=handler_water_pid, org=(0, 50),
                         fontFace=font, fontScale=1,
                         color=(100, 255, 0), thickness=2, lineType=cv2.LINE_4)
