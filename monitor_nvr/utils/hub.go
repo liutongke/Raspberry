@@ -9,6 +9,7 @@ var clientHub *Hub
 
 // 所有用户管理
 type Hub struct {
+	Pool        *Pool
 	Ch          chan *Ch
 	Cam         map[string]bool     //device_id=>True
 	CamCh       map[string]chan *Ch //device_id=>ch
@@ -27,10 +28,16 @@ func newClientHub() *Hub {
 	}
 }
 
+var pool *Pool
+
 // 启动hub
 func StartClientHub() *Hub {
 	clientHub = newClientHub()
 	go clientHub.run()
+
+	pool = NewPool()
+	go pool.startPool()
+
 	return clientHub
 }
 
@@ -45,6 +52,7 @@ func (h *Hub) run() {
 					DeviceId: deviceId,
 					Data:     camInfo.Data,
 					Break:    false,
+					Idx:      camInfo.Idx,
 				}
 				h.CamLast[deviceId] = GetTime()
 			} else { //不存在创建
@@ -55,6 +63,7 @@ func (h *Hub) run() {
 					DeviceId: deviceId,
 					Data:     camInfo.Data,
 					Break:    false,
+					Idx:      camInfo.Idx,
 				}
 				h.Cam[deviceId] = true
 				h.CamCh[deviceId] = ch
@@ -63,7 +72,7 @@ func (h *Hub) run() {
 		case _ = <-h.Heart: //心跳检测
 			currentTime := GetTime()
 			for deviceId, lastTm := range h.CamLast {
-				fmt.Printf("检测在线设备:%s \n", deviceId)
+				//fmt.Printf("检测在线设备:%s \n", deviceId)
 				if (currentTime - lastTm) >= 5 {
 					fmt.Printf("踢出连接超时设备:%s", deviceId)
 					h.CamCh[deviceId] <- &Ch{

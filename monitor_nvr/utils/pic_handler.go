@@ -12,6 +12,7 @@ type Ch struct {
 	DeviceId string
 	Data     []byte
 	Break    bool
+	Idx      int64
 }
 
 func RtmpSteamPush(ch chan *Ch, cam Cam) {
@@ -60,11 +61,17 @@ func RtmpSteamPush(ch chan *Ch, cam Cam) {
 			b, err := MakeWaterMarkerTobyte(v.Data, GetNowStr())
 			if err != nil {
 				fmt.Printf("MakeWaterMarkerTobyte err:%s", err.Error())
-			}
-			_, err = io.Copy(pipeIn, bytes.NewReader(b))
-			if err != nil {
-				fmt.Println("Error writing image data to FFmpeg:", err)
-				continue
+			} else {
+				_, err = io.Copy(pipeIn, bytes.NewReader(b))
+				if err != nil {
+					fmt.Println("Error writing image data to FFmpeg:", err)
+					continue
+				}
+				pool.SendToWork(&SendData{
+					DeviceId: v.DeviceId,
+					Data:     b,
+					idx:      v.Idx,
+				})
 			}
 			//fmt.Printf("DeviceId:%s time:%s \n", v.DeviceId, GetNowStr())
 

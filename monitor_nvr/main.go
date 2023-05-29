@@ -54,6 +54,7 @@ func main() {
 		hub.Ch <- &utils.Ch{
 			DeviceId: deviceId,
 			Data:     byteData,
+			Idx:      utils.GetMicroseconds(),
 		}
 		//chContainer[deviceId] <- utils.Ch{
 		//	DeviceId: deviceId,

@@ -23,6 +23,56 @@ func GetNowStr() string {
 	return formattedTime
 }
 
+// 获取11位unix时间戳
+func GetTime() int64 {
+	// 获取当前时间
+	currentTime := time.Now()
+
+	// 获取11位的Unix时间戳（秒级）
+	unixTimestamp := currentTime.Unix()
+
+	//fmt.Println(unixTimestamp)
+	return unixTimestamp
+	//return strconv.FormatInt(unixTimestamp, 10)
+}
+
+// 获取上一个小时
+func GetPrevHourId() string {
+	currentTime := time.Now()
+	previousHour := currentTime.Add(-time.Hour)
+
+	//fmt.Println("当前时间：", currentTime)
+	//fmt.Println("上一个小时的时间：", previousHour)
+	return previousHour.Format("2006010215")
+}
+
+// 获取当前小时证书
+func GetNowHourId() string {
+	currentTime := time.Now()
+
+	//fmt.Println("当前时间：", currentTime)
+	//fmt.Println("上一个小时的时间：", previousHour)
+	return currentTime.Format("2006010215")
+}
+
+// 获取当前毫秒
+func GetMilliSecond() int64 {
+	currentTime := time.Now()
+	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
+
+	//fmt.Println("当前毫秒时间：", milliseconds)
+	return milliseconds
+}
+
+// 获取当前微秒
+func GetMicroseconds() int64 {
+	currentTime := time.Now()
+	microseconds := currentTime.UnixNano() / int64(time.Microsecond)
+
+	//fmt.Println("当前微秒时间：", microseconds)
+	return microseconds
+}
+
 // GetRandNum 获取随机数
 func GetRandNum() string {
 	// 设置随机种子，一般使用当前时间的纳秒数
@@ -73,19 +123,6 @@ func GetImageFiles(folderPath string) ([]string, error) {
 	return imageFiles, nil
 }
 
-// 获取11位unix时间戳
-func GetTime() int64 {
-	// 获取当前时间
-	currentTime := time.Now()
-
-	// 获取11位的Unix时间戳（秒级）
-	unixTimestamp := currentTime.Unix()
-
-	//fmt.Println(unixTimestamp)
-	return unixTimestamp
-	//return strconv.FormatInt(unixTimestamp, 10)
-}
-
 // CheckJPEGValidity 检测 JPEG 二进制流的正确性
 func CheckJPEGValidity(data []byte) bool {
 	_, err := jpeg.DecodeConfig(bytes.NewReader(data))
@@ -96,7 +133,9 @@ func CheckJPEGValidity(data []byte) bool {
 	return true
 }
 
-// 将文件夹下的图片自然排序
+/*
+GetSort 将文件夹下的图片自然排序
+*/
 func GetSort(imageFolder string) ([]string, error) {
 	//imageFolder := "images" // 图片所在的文件夹路径
 
@@ -110,7 +149,7 @@ func GetSort(imageFolder string) ([]string, error) {
 		return naturalLess(imageNames[i], imageNames[j])
 	})
 
-	fmt.Println("排序后的图片名称列表:")
+	//fmt.Println("排序后的图片名称列表:")
 	//for _, name := range imageNames {
 	//	fmt.Println(name)
 	//}
