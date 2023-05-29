@@ -19,9 +19,10 @@ func decodePayload(byte_data []byte) (string, []byte) {
 
 // UDP server端
 func main() {
+	utils.InitDir()
 	hub := utils.StartClientHub()
-
-	go utils.PingTimer(hub) //启动定时任务
+	utils.Task(hub)
+	//go utils.PingTimer(hub) //启动定时任务
 	//camList := utils.CamParam()
 	//chContainer := make(map[string]chan utils.Ch, len(camList))
 	//

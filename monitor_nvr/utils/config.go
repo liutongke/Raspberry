@@ -1,5 +1,10 @@
 package utils
 
+import (
+	"fmt"
+	"os"
+)
+
 type Cam struct {
 	Fps     int
 	Width   int
@@ -23,4 +28,13 @@ func CamParam() map[string]Cam {
 		},
 	}
 	return conf
+}
+
+func InitDir() {
+	camList := CamParam()
+	dir, _ := os.Getwd()
+	for deviceId, _ := range camList {
+		MkDir(fmt.Sprintf("%s/images/%s", dir, deviceId))
+		MkDir(fmt.Sprintf("%s/video/%s", dir, deviceId))
+	}
 }

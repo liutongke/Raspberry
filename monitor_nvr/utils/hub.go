@@ -30,6 +30,10 @@ func newClientHub() *Hub {
 
 var pool *Pool
 
+func GetHub() *Hub {
+	return clientHub
+}
+
 // 启动hub
 func StartClientHub() *Hub {
 	clientHub = newClientHub()
@@ -86,6 +90,25 @@ func (h *Hub) run() {
 					delete(h.CamLast, deviceId)
 				}
 			}
+		}
+	}
+}
+func ClearTimeOutDevice() {
+	currentTime := GetTime()
+	h := GetHub()
+	for deviceId, lastTm := range h.CamLast {
+		//fmt.Printf("检测在线设备:%s \n", deviceId)
+		if (currentTime - lastTm) >= 5 {
+			fmt.Printf("踢出连接超时设备:%s", deviceId)
+			h.CamCh[deviceId] <- &Ch{
+				DeviceId: deviceId,
+				Data:     nil,
+				Break:    true,
+			}
+			//删除这些设备
+			delete(h.Cam, deviceId)
+			delete(h.CamCh, deviceId)
+			delete(h.CamLast, deviceId)
 		}
 	}
 }

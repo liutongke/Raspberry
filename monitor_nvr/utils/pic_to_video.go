@@ -1,9 +1,8 @@
-package main
+package utils
 
 import (
 	"fmt"
 	"io/ioutil"
-	"monitor/nvr/utils"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,17 +10,17 @@ import (
 	"github.com/icza/mjpeg"
 )
 
-func main() {
-	imageFolder := "2023052907" // 替换为你的图片文件夹路径
-	outputFile := "output.avi"  // 替换为输出视频文件的路径和名称
+func PicToVideo(imageFolder, outputFile string, camInfo Cam) {
+	//imageFolder := "2023052907" // 替换为你的图片文件夹路径
+	//outputFile := "output.avi"  // 替换为输出视频文件的路径和名称
 
-	imageFiles, err := utils.GetSort(imageFolder)
+	imageFiles, err := GetSort(imageFolder)
 	if err != nil {
 		return
 	}
-	fmt.Println(len(imageFiles) / 3600)
+
 	// 创建MJPEG编码器
-	encoder, _ := mjpeg.New(outputFile, 800, 600, 5)
+	encoder, _ := mjpeg.New(outputFile, int32(camInfo.Width), int32(camInfo.Height), int32(camInfo.Fps))
 
 	// 逐个读取图像文件并添加到编码器
 	for _, imagePath := range imageFiles {
