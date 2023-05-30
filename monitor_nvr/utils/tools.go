@@ -46,6 +46,18 @@ func GetPrevHourId() string {
 	return previousHour.Format("2006010215")
 }
 
+// 获取前x小时
+func GetAgoHourId(n int) string {
+	// 获取当前时间
+	now := time.Now()
+
+	// 计算 n 小时前的时间
+	hoursAgo := now.Add(-time.Duration(n) * time.Hour)
+
+	//fmt.Println(n, "小时前的时间是:", hoursAgo)
+	return hoursAgo.Format("2006010215")
+}
+
 // 获取当前小时证书
 func GetNowHourId() string {
 	currentTime := time.Now()
@@ -208,4 +220,65 @@ func naturalLess(s1, s2 string) bool {
 
 	// 如果前缀部分完全相同，长度较短的字符串更小
 	return len(parts1) < len(parts2)
+}
+
+// 获取指定路径下的所有目录
+func GetDirPathName(dirPath string) ([]string, error) {
+	// 打开目录
+	dir, err := os.Open(dirPath)
+	if err != nil {
+		fmt.Println("无法打开目录:", err)
+		return nil, err
+	}
+	defer dir.Close()
+
+	// 读取目录内容
+	fileInfos, err := dir.Readdir(-1)
+	if err != nil {
+		fmt.Println("无法读取目录内容:", err)
+		return nil, err
+	}
+
+	// 过滤出目录
+	var directories []string
+	for _, fileInfo := range fileInfos {
+		if fileInfo.IsDir() {
+			directories = append(directories, fileInfo.Name())
+		}
+	}
+	return directories, err
+}
+
+// 删除指定路径目录
+func DelDir(dirPath string) bool {
+	err := os.RemoveAll(dirPath)
+	if err != nil {
+		//fmt.Println("删除目录失败:", err)
+		return false
+	}
+	//fmt.Println("目录删除成功:", dirPath)
+	return true
+}
+
+// 获取指定路径下的avi文件
+func GetAVIFiles(dirPath string) ([]string, error) {
+	var aviFiles []string
+
+	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !info.IsDir() && filepath.Ext(path) == ".avi" {
+			aviFiles = append(aviFiles, path)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return aviFiles, nil
 }

@@ -32,9 +32,28 @@ func CamParam() map[string]Cam {
 
 func InitDir() {
 	camList := CamParam()
-	dir, _ := os.Getwd()
 	for deviceId, _ := range camList {
-		MkDir(fmt.Sprintf("%s/images/%s", dir, deviceId))
-		MkDir(fmt.Sprintf("%s/video/%s", dir, deviceId))
+		MkDir(fmt.Sprintf("%s%s", ImagePath(), deviceId))
+		MkDir(fmt.Sprintf("%s%s", VideoPath(), deviceId))
 	}
+}
+
+func GetRunDirPath() string {
+	dir, _ := os.Getwd()
+	return dir
+}
+
+// ImagePath 图片保存路径
+func ImagePath() string {
+	return fmt.Sprintf("%s/data/images/", GetRunDirPath())
+}
+
+// VideoPath 保存视频路径
+func VideoPath() string {
+	return fmt.Sprintf("%s/data/video/", GetRunDirPath())
+}
+
+// 保留多长时间视频资料
+func KeepVideoTm() int {
+	return 24 * 10
 }

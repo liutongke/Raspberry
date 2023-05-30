@@ -60,7 +60,7 @@ func RtmpSteamPush(ch chan *Ch, cam Cam) {
 			// 将图片数据写入FFmpeg的标准输入管道
 			b, err := MakeWaterMarkerTobyte(v.Data, GetNowStr())
 			if err != nil {
-				fmt.Printf("MakeWaterMarkerTobyte err:%s", err.Error())
+				fmt.Printf("MakeWaterMarkerTobyte err:%s \n", err.Error())
 			} else {
 				_, err = io.Copy(pipeIn, bytes.NewReader(b))
 				if err != nil {

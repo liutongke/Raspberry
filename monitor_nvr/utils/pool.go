@@ -3,7 +3,6 @@ package utils
 import (
 	"fmt"
 	"math/rand"
-	"os"
 )
 
 type Pool struct {
@@ -40,8 +39,7 @@ func (p *Pool) startOneWork(workerID int, taskQueue chan *SendData) {
 		case request := <-taskQueue:
 
 			//fmt.Printf("接收到的任务信息：workdId:%d,数据：%s,idx：%d\n", workerID, request.DeviceId, request.idx)
-			dir, _ := os.Getwd()
-			filePath := fmt.Sprintf("%s/images/%s/%s", dir, request.DeviceId, GetNowHourId())
+			filePath := fmt.Sprintf("%s%s/%s", ImagePath(), request.DeviceId, GetNowHourId())
 			//fmt.Println(!DirIsExist(filePath), filePath)
 			if !DirIsExist(filePath) {
 				MkDir(filePath)

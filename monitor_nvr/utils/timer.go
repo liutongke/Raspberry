@@ -2,21 +2,22 @@ package utils
 
 import (
 	"fmt"
-	"os"
+	"path/filepath"
+	"strings"
 	"time"
 )
 
 func Task(hub *Hub) {
 	PingTimer(clearTimeOutDevice, hub, 1*time.Second)
 	PingTimer(picToVideo, hub, 1800*time.Second)
+	PingTimer(keepVideo, hub, 3600*time.Second)
 }
 
 func picToVideo(param interface{}) {
 	camList := CamParam()
-	dir, _ := os.Getwd()
 	for deviceId, camInfo := range camList {
-		filePath := fmt.Sprintf("%s/images/%s/%s", dir, deviceId, GetPrevHourId())
-		outputFile := fmt.Sprintf("%s/video/%s-%s.avi", dir, deviceId, GetPrevHourId())
+		filePath := fmt.Sprintf("%s%s/%s", ImagePath(), deviceId, GetPrevHourId())
+		outputFile := fmt.Sprintf("%s%s/%s.avi", VideoPath(), deviceId, GetPrevHourId())
 		if !DirIsExist(outputFile) {
 			PicToVideo(filePath, outputFile, camInfo)
 		}
@@ -26,6 +27,43 @@ func clearTimeOutDevice(param interface{}) {
 	//fmt.Println("检测超时设备")
 	ClearTimeOutDevice()
 	return
+}
+
+// 保留视频,清除超过保存时间视频
+func keepVideo(param interface{}) {
+	camList := CamParam()
+	agoTm := GetAgoHourId(KeepVideoTm())
+	for deviceId, _ := range camList {
+		//删除指定图片目录
+		imageFilePath, err := GetDirPathName(fmt.Sprintf("%s%s", ImagePath(), deviceId))
+		if err == nil {
+			for _, imageFileName := range imageFilePath {
+				if imageFileName < agoTm {
+					delFilePath := fmt.Sprintf("%s%s/%s", ImagePath(), deviceId, imageFileName)
+					DelDir(delFilePath)
+				}
+			}
+		}
+		//删除指定视频目录
+		videoFilePath := fmt.Sprintf("%s%s", VideoPath(), deviceId)
+		//fmt.Println(videoFilePath)
+		files, err := GetAVIFiles(videoFilePath)
+		if err == nil {
+			for _, path := range files {
+				if extractFileName(path) < agoTm {
+					DelDir(path)
+				}
+				//fmt.Println(path)
+			}
+		}
+	}
+}
+
+func extractFileName(path string) string {
+	base := filepath.Base(path)
+	ext := filepath.Ext(base)
+	name := strings.TrimSuffix(base, ext)
+	return name
 }
 
 type fun func(interface{}) // 声明了一个函数类型
