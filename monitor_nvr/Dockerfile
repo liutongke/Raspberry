@@ -3,7 +3,7 @@ FROM golang:1.20.4-bullseye
 
 WORKDIR /var/www/html
 
-RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+RUN sed -i 's/deb.debian.org/mirrors.tencent.com/g' /etc/apt/sources.list
 #设置时区
 ENV TZ=Asia/Shanghai
 RUN apt-get update
