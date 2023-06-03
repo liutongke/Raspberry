@@ -1,0 +1,6 @@
+2023/06/02 21:26:49 [crit] 7#0: *12 stat() "/var/www/html/index.html" failed (5: Input/output error), client: 172.18.0.1, server: localhost, request: "GET / HTTP/1.1", host: "192.168.1.106:9900"
+2023/06/02 21:26:49 [error] 7#0: *12 open() "/var/www/html/50x.html" failed (2: No such file or directory), client: 172.18.0.1, server: localhost, request: "GET / HTTP/1.1", host: "192.168.1.106:9900"
+2023/06/02 21:26:49 [crit] 7#0: *14 stat() "/var/www/html/index.html" failed (5: Input/output error), client: 172.18.0.1, server: localhost, request: "GET / HTTP/1.1", host: "192.168.1.106:9900"
+2023/06/02 21:26:49 [error] 7#0: *14 open() "/var/www/html/50x.html" failed (2: No such file or directory), client: 172.18.0.1, server: localhost, request: "GET / HTTP/1.1", host: "192.168.1.106:9900"
+2023/06/02 21:26:51 [crit] 7#0: *13 stat() "/var/www/html/index.html" failed (5: Input/output error), client: 172.18.0.1, server: localhost, request: "GET / HTTP/1.1", host: "192.168.1.106:9900"
+2023/06/02 21:26:51 [error] 7#0: *13 open() "/var/www/html/50x.html" failed (2: No such file or directory), client: 172.18.0.1, server: localhost, request: "GET / HTTP/1.1", host: "192.168.1.106:9900"
