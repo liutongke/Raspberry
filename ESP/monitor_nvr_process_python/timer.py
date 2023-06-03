@@ -23,11 +23,11 @@ def job():
     print("执行定时任务")
 
     for device_id, value in config.cam_param().items():
-        folder_path = f'{os.getcwd()}/images/{device_id}/{tools.get_prev_hour_id()}'
+        folder_path = f'{os.getcwd()}/data/images/{device_id}/{tools.get_prev_hour_id()}'
         # print(folder_path)
         # print(os.path.exists(folder_path))
         if os.path.exists(folder_path):
-            mp4_path = f'video/{device_id}/{tools.get_prev_hour_id()}.mp4'
+            mp4_path = f'/data/video/{device_id}/{tools.get_prev_hour_id()}.mp4'
             if tools.mkdirs(tools.get_dir_path(mp4_path)):
                 images_to_video(folder_path, mp4_path, 6)
 

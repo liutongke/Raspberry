@@ -31,7 +31,7 @@ def save_image(queue):
         item = queue.get()
         if item is None:
             break
-        # saveFile = 'images/' + str(addr) + '.jpg'
+
         addr = item['addr']
         img3 = item['img']
         # result = addr.split('/')[0]

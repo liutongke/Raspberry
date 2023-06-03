@@ -13,7 +13,7 @@ else
 fi
 
 # 构建 Docker 镜像
-docker build -t monitor_nvr:v1 .
+sudo docker build -t monitor_nvr_go:v1 .
 
 # 运行 Docker 容器
-docker run --name monitor_nvr-v1 -itd -p 9090:9090/udp -v $data_dir:/var/www/html/data monitor_nvr:v1
+sudo docker run --name monitor_nvr_go_v1 -itd -p 12349:12349 -p 9090:9090/udp -v $data_dir:/var/www/html/data monitor_nvr_go:v1
