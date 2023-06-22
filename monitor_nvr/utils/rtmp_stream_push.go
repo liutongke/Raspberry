@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"os/exec"
 	"strconv"
 )
@@ -15,7 +16,9 @@ type Ch struct {
 	Idx      int64
 }
 
-func RtmpSteamPush(ch chan *Ch, cam Cam) {
+// RtmpStreamPush 将处理完后的图片推流到rtmp服务器
+func RtmpStreamPush(ch chan *Ch, cam Cam, h *Hub) {
+	log.Println("开始推流")
 	// 创建FFmpeg命令
 	ffmpegCmd := exec.Command("ffmpeg",
 		"-y",
@@ -38,17 +41,18 @@ func RtmpSteamPush(ch chan *Ch, cam Cam) {
 	// 获取FFmpeg命令的标准输入管道
 	pipeIn, err := ffmpegCmd.StdinPipe()
 	if err != nil {
-		fmt.Println("Error getting FFmpeg stdin pipe:", err)
+		log.Fatalf("Error getting FFmpeg stdin pipe: %v", err)
 		return
 	}
 
 	// 启动FFmpeg进程
 	err = ffmpegCmd.Start()
 	if err != nil {
-		fmt.Println("Error starting FFmpeg:", err)
+		log.Fatalf("Error starting FFmpeg: %v", err)
 		return
 	}
 
+	pipWriteErrNum := 0
 	// 逐个推送图片帧
 	for {
 		select {
@@ -56,24 +60,33 @@ func RtmpSteamPush(ch chan *Ch, cam Cam) {
 			if v.Break { //结束
 				goto stopFfmpeg
 			}
-			//fmt.Println("pic_handler: ", v.DeviceId)
+
 			// 将图片数据写入FFmpeg的标准输入管道
-			b, err := MakeWaterMarkerTobyte(v.Data, GetNowStr())
+			b, err := AddWatermarkPic(v.Data, GetNowStr())
 			if err != nil {
-				fmt.Printf("MakeWaterMarkerTobyte err:%s \n", err.Error())
+				log.Printf("MakeWaterMarkerTobyte err:%s \n", err)
 			} else {
 				_, err = io.Copy(pipeIn, bytes.NewReader(b))
 				if err != nil {
-					fmt.Println("Error writing image data to FFmpeg:", err)
-					continue
+					log.Printf("Error writing image data to FFmpeg: %v", err)
+
+					if pipWriteErrNum >= 200 {
+						//推流服务器出现错误、或者ffmpeg写入管道出现问题
+						log.Println("Retry limit reached,stop push streamed")
+						goto stopFfmpeg
+					}
+
+					pipWriteErrNum++
 				}
-				pool.SendToWork(&SendData{
-					DeviceId: v.DeviceId,
-					Data:     b,
-					idx:      v.Idx,
-				})
+
+				if SavePic() { //将数据流保存为图片
+					pool.SendToWork(&SendData{
+						DeviceId: v.DeviceId,
+						Data:     b,
+						idx:      v.Idx,
+					})
+				}
 			}
-			//fmt.Printf("DeviceId:%s time:%s \n", v.DeviceId, GetNowStr())
 
 			// 等待一段时间，模拟帧率
 			//time.Sleep(time.Second / 10)
@@ -83,11 +96,6 @@ func RtmpSteamPush(ch chan *Ch, cam Cam) {
 stopFfmpeg:
 	// 关闭FFmpeg的标准输入管道，等待推流操作完成
 	pipeIn.Close()
-	err = ffmpegCmd.Wait()
-	if err != nil {
-		fmt.Println("Error waiting for FFmpeg:", err)
-		return
-	}
-
-	fmt.Println("Image frames streamed successfully.")
+	log.Println("frames streamed complete,stop ffmpeg Service")
+	h.Heart <- 1
 }

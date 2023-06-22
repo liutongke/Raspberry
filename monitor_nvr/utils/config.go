@@ -37,10 +37,9 @@ func CamParam() map[string]Cam {
 }
 
 func InitDir() {
-	camList := CamParam()
-	for deviceId, _ := range camList {
-		MkDir(fmt.Sprintf("%s%s", ImagePath(), deviceId))
-		MkDir(fmt.Sprintf("%s%s", VideoPath(), deviceId))
+	for deviceId, _ := range CamParam() {
+		MkDirAll(fmt.Sprintf("%s%s", ImagePath(), deviceId))
+		MkDirAll(fmt.Sprintf("%s%s", VideoPath(), deviceId))
 	}
 }
 
@@ -66,4 +65,14 @@ func KeepVideoTm() int {
 
 func IsDebug() bool {
 	return true
+}
+
+// SaveVideo 是否开启保存视频，srs如果开了DVR功能可以关闭 false关闭true开启
+func SaveVideo() bool {
+	return false
+}
+
+// SavePic 是否开启保存每帧照片 false关闭true开启
+func SavePic() bool {
+	return false
 }

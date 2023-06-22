@@ -40,13 +40,9 @@ func (p *Pool) startOneWork(workerID int, taskQueue chan *SendData) {
 
 			//fmt.Printf("接收到的任务信息：workdId:%d,数据：%s,idx：%d\n", workerID, request.DeviceId, request.idx)
 			filePath := fmt.Sprintf("%s%s/%s", ImagePath(), request.DeviceId, GetNowHourId())
-			//fmt.Println(!DirIsExist(filePath), filePath)
-			if !DirIsExist(filePath) {
-				MkDir(filePath)
-			}
+
+			MkDirAll(filePath) //不存在则创建，存在则跳过
 			SaveImages(fmt.Sprintf("%s/%d.jpg", filePath, request.idx), request.Data)
-			//time.Sleep(1 * time.Second)
-			//WgSendData.Done()
 		}
 	}
 }
@@ -62,22 +58,3 @@ func (p *Pool) SendToWork(data *SendData) {
 	i := rand.Intn(9)
 	p.pool[i] <- data
 }
-
-//func main() {
-//	Wg.Add(MaxPool)
-//	pool := NewPool()
-//	pool.startPool()
-//
-//	Wg.Wait()
-//
-//	for i := 0; i <= 100; i++ {
-//		WgSendData.Add(1)
-//
-//		//生产者，投递任务
-//		pool.SendToWork(&SendData{
-//			Data: i,
-//		})
-//	}
-//
-//	WgSendData.Wait()
-//}

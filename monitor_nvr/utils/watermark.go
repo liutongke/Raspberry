@@ -2,13 +2,13 @@ package utils
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/fogleman/gg"
 	"image"
 	"image/jpeg"
 )
 
-func MakeWaterMarker(imgPath string, waterDesc string, outPath string) bool {
+// FileAddMakeWater 读取给定路径文件添加水印后重新保存
+func FileAddMakeWater(imgPath string, waterDesc string, outPath string) bool {
 	im, err := gg.LoadImage(imgPath)
 	if err != nil {
 		return false
@@ -21,8 +21,7 @@ func MakeWaterMarker(imgPath string, waterDesc string, outPath string) bool {
 	if rd == 0 {
 		rd = 1
 	}
-	if err := dc.LoadFontFace("./fonts/Microsoft_YaHei.ttf", float64(rd*24)); err != nil {
-		fmt.Print(err)
+	if err = dc.LoadFontFace("./fonts/Microsoft_YaHei.ttf", float64(rd*24)); err != nil {
 		return false
 	}
 	dc.DrawImage(im, 0, 0)
@@ -34,7 +33,9 @@ func MakeWaterMarker(imgPath string, waterDesc string, outPath string) bool {
 	dc.SavePNG(outPath)
 	return true
 }
-func MakeWaterMarkerTobyte(pic []byte, waterDesc string) ([]byte, error) {
+
+// AddWatermarkPic 给图片添加水印
+func AddWatermarkPic(pic []byte, waterDesc string) ([]byte, error) {
 
 	im, _, err := image.Decode(bytes.NewReader(pic))
 	if err != nil {
@@ -49,8 +50,7 @@ func MakeWaterMarkerTobyte(pic []byte, waterDesc string) ([]byte, error) {
 		rd = 1
 	}
 	//rd字体大小
-	if err := dc.LoadFontFace("./fonts/Microsoft_YaHei.ttf", float64(rd*12)); err != nil {
-		fmt.Print(err)
+	if err = dc.LoadFontFace("./fonts/Microsoft_YaHei.ttf", float64(rd*12)); err != nil {
 		return nil, err
 	}
 	dc.DrawImage(im, 0, 0)
@@ -59,16 +59,12 @@ func MakeWaterMarkerTobyte(pic []byte, waterDesc string) ([]byte, error) {
 	dc.DrawString(waterDesc, float64(550), float64(580)) //水印显示位置
 	dc.Pop()
 
-	// 创建一个缓冲区来保存图像字节流
-	buf := new(bytes.Buffer)
-	// 将图像编码为PNG格式，并将结果写入缓冲区
-	err = jpeg.Encode(buf, dc.Image(), nil)
+	buf := new(bytes.Buffer)                // 创建一个缓冲区来保存图像字节流
+	err = jpeg.Encode(buf, dc.Image(), nil) // 将图像编码为PNG格式，并将结果写入缓冲区
 	if err != nil {
 		return nil, err
 	}
 
 	// 从缓冲区中获取字节流
-	imgBytes := buf.Bytes()
-	return imgBytes, nil
-	//return bytes.NewReader(imgBytes), nil
+	return buf.Bytes(), nil
 }
