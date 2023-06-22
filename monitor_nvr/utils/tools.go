@@ -1,100 +1,14 @@
 package utils
 
 import (
-	"bytes"
 	"fmt"
-	"image/jpeg"
 	"io/ioutil"
-	"log"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 )
-
-// GetNowStr 获取时间戳
-func GetNowStr() string {
-	currentTime := time.Now()
-	formattedTime := currentTime.Format("2006-01-02 15:04:05")
-	//fmt.Println(formattedTime)
-	return formattedTime
-}
-
-// 获取11位unix时间戳
-func GetTime() int64 {
-	// 获取当前时间
-	currentTime := time.Now()
-
-	// 获取11位的Unix时间戳（秒级）
-	unixTimestamp := currentTime.Unix()
-
-	//fmt.Println(unixTimestamp)
-	return unixTimestamp
-	//return strconv.FormatInt(unixTimestamp, 10)
-}
-
-// 获取上一个小时
-func GetPrevHourId() string {
-	currentTime := time.Now()
-	previousHour := currentTime.Add(-time.Hour)
-
-	//fmt.Println("当前时间：", currentTime)
-	//fmt.Println("上一个小时的时间：", previousHour)
-	return previousHour.Format("2006010215")
-}
-
-// 获取前x小时
-func GetAgoHourId(n int) string {
-	// 获取当前时间
-	now := time.Now()
-
-	// 计算 n 小时前的时间
-	hoursAgo := now.Add(-time.Duration(n) * time.Hour)
-
-	//fmt.Println(n, "小时前的时间是:", hoursAgo)
-	return hoursAgo.Format("2006010215")
-}
-
-// 获取当前小时证书
-func GetNowHourId() string {
-	currentTime := time.Now()
-
-	//fmt.Println("当前时间：", currentTime)
-	//fmt.Println("上一个小时的时间：", previousHour)
-	return currentTime.Format("2006010215")
-}
-
-// 获取当前毫秒
-func GetMilliSecond() int64 {
-	currentTime := time.Now()
-	milliseconds := currentTime.UnixNano() / int64(time.Millisecond)
-
-	//fmt.Println("当前毫秒时间：", milliseconds)
-	return milliseconds
-}
-
-// 获取当前微秒
-func GetMicroseconds() int64 {
-	currentTime := time.Now()
-	microseconds := currentTime.UnixNano() / int64(time.Microsecond)
-
-	//fmt.Println("当前微秒时间：", microseconds)
-	return microseconds
-}
-
-// GetRandNum 获取随机数
-func GetRandNum() string {
-	// 设置随机种子，一般使用当前时间的纳秒数
-	rand.Seed(time.Now().UnixNano())
-
-	// 生成一个0到100之间的随机整数
-	randomNumber := rand.Intn(101)
-	//fmt.Println("Random number:", randomNumber)
-	return strconv.Itoa(randomNumber)
-}
 
 // SaveImages 保存照片
 func SaveImages(filePath string, byteData []byte) {
@@ -105,7 +19,7 @@ func SaveImages(filePath string, byteData []byte) {
 	}
 }
 
-// 检查文件是否为图片文件
+// IsImageFile 检查文件是否为图片文件
 func IsImageFile(filePath string) bool {
 	extension := filepath.Ext(filePath)
 	switch extension {
@@ -115,7 +29,7 @@ func IsImageFile(filePath string) bool {
 	return false
 }
 
-// 获取指定文件夹下的图片文件列表
+// GetImageFiles 获取指定文件夹下的图片文件列表
 func GetImageFiles(folderPath string) ([]string, error) {
 	var imageFiles []string
 
@@ -135,19 +49,7 @@ func GetImageFiles(folderPath string) ([]string, error) {
 	return imageFiles, nil
 }
 
-// CheckJPEGValidity 检测 JPEG 二进制流的正确性
-func CheckJPEGValidity(data []byte) bool {
-	_, err := jpeg.DecodeConfig(bytes.NewReader(data))
-	if err != nil {
-		log.Println("Invalid JPEG format:", err)
-		return false
-	}
-	return true
-}
-
-/*
-GetSort 将文件夹下的图片自然排序
-*/
+// GetSort 将文件夹下的图片自然排序
 func GetSort(imageFolder string) ([]string, error) {
 	//imageFolder := "images" // 图片所在的文件夹路径
 
@@ -220,65 +122,4 @@ func naturalLess(s1, s2 string) bool {
 
 	// 如果前缀部分完全相同，长度较短的字符串更小
 	return len(parts1) < len(parts2)
-}
-
-// 获取指定路径下的所有目录
-func GetDirPathName(dirPath string) ([]string, error) {
-	// 打开目录
-	dir, err := os.Open(dirPath)
-	if err != nil {
-		fmt.Println("无法打开目录:", err)
-		return nil, err
-	}
-	defer dir.Close()
-
-	// 读取目录内容
-	fileInfos, err := dir.Readdir(-1)
-	if err != nil {
-		fmt.Println("无法读取目录内容:", err)
-		return nil, err
-	}
-
-	// 过滤出目录
-	var directories []string
-	for _, fileInfo := range fileInfos {
-		if fileInfo.IsDir() {
-			directories = append(directories, fileInfo.Name())
-		}
-	}
-	return directories, err
-}
-
-// 删除指定路径目录
-func DelDir(dirPath string) bool {
-	err := os.RemoveAll(dirPath)
-	if err != nil {
-		//fmt.Println("删除目录失败:", err)
-		return false
-	}
-	//fmt.Println("目录删除成功:", dirPath)
-	return true
-}
-
-// 获取指定路径下的avi文件
-func GetAVIFiles(dirPath string) ([]string, error) {
-	var aviFiles []string
-
-	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if !info.IsDir() && filepath.Ext(path) == ".avi" {
-			aviFiles = append(aviFiles, path)
-		}
-
-		return nil
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return aviFiles, nil
 }

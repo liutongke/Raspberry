@@ -3,7 +3,6 @@ module monitor/nvr
 go 1.20
 
 require (
-	github.com/BurntSushi/toml v1.3.0
 	github.com/fogleman/gg v1.3.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/icza/mjpeg v0.0.0-20230330134156-38318e5ab8f4

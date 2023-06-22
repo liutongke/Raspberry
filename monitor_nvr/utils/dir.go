@@ -3,39 +3,90 @@ package utils
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
-// MkDir 创建文件夹父级不存在一同创建
-func MkDir(folderPath string) bool {
-	// 检查文件夹状态
-	_, err := os.Stat(folderPath)
-	if os.IsNotExist(err) {
-		// 文件夹不存在，创建它
-		err := os.MkdirAll(folderPath, os.ModePerm)
+// GetAVIFiles 获取指定路径下的avi文件
+func GetAVIFiles(dirPath string) ([]string, error) {
+	var aviFiles []string
+
+	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
-			fmt.Printf("无法创建文件夹：%v\n", err)
-			return false
+			return err
 		}
-		fmt.Println("文件夹已创建")
-	} else if err != nil {
-		// 其他错误发生
-		fmt.Printf("无法获取文件夹状态：%v\n", err)
-		return false
-	} else {
-		// 文件夹已存在
-		fmt.Println("文件夹已存在")
-		return true
+
+		if !info.IsDir() && filepath.Ext(path) == ".avi" {
+			aviFiles = append(aviFiles, path)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
 	}
-	return true
+
+	return aviFiles, nil
 }
 
-// DirIsExist 检查文件夹状态 true存在 false不存在
-func DirIsExist(folderPath string) bool {
-	_, err := os.Stat(folderPath)
-	if os.IsNotExist(err) {
-		return false
-	} else if err != nil {
-		return false
+// GetDirPathName 获取指定路径下的所有目录
+func GetDirPathName(dirPath string) ([]string, error) {
+	// 打开目录
+	dir, err := os.Open(dirPath)
+	if err != nil {
+		fmt.Println("无法打开目录:", err)
+		return nil, err
+	}
+	defer dir.Close()
+
+	// 读取目录内容
+	fileInfos, err := dir.Readdir(-1)
+	if err != nil {
+		fmt.Println("无法读取目录内容:", err)
+		return nil, err
+	}
+
+	// 过滤出目录
+	var directories []string
+	for _, fileInfo := range fileInfos {
+		if fileInfo.IsDir() {
+			directories = append(directories, fileInfo.Name())
+		}
+	}
+	return directories, err
+}
+
+// GetAbsDirPath 根据当前的工作目录来解析相对路径，可以使用../test
+func GetAbsDirPath(filePath string) string {
+	absPath, err := filepath.Abs(filePath)
+	if err != nil {
+		return ""
+	}
+	return absPath
+}
+
+// DelDir 删除目录
+func DelDir(dirPath string) bool {
+	err := os.RemoveAll(dirPath)
+	return err == nil
+}
+
+// MkDirAll 父目录不存在一同创建
+func MkDirAll(dirPath string) bool {
+	err := os.MkdirAll(dirPath, os.ModePerm)
+	return err == nil
+}
+
+// IsExist 判断目录是否存在
+func IsExist(dirPath string) bool {
+	// 检查目录是否存在
+	_, err := os.Stat(dirPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false
+		} else {
+			return false
+		}
 	}
 	return true
 }

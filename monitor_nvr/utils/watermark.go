@@ -21,7 +21,7 @@ func FileAddMakeWater(imgPath string, waterDesc string, outPath string) bool {
 	if rd == 0 {
 		rd = 1
 	}
-	if err = dc.LoadFontFace("./fonts/Microsoft_YaHei.ttf", float64(rd*24)); err != nil {
+	if err = dc.LoadFontFace(GetAbsDirPath("./fonts/Microsoft_YaHei.ttf"), float64(rd*24)); err != nil {
 		return false
 	}
 	dc.DrawImage(im, 0, 0)
@@ -50,7 +50,7 @@ func AddWatermarkPic(pic []byte, waterDesc string) ([]byte, error) {
 		rd = 1
 	}
 	//rd字体大小
-	if err = dc.LoadFontFace("./fonts/Microsoft_YaHei.ttf", float64(rd*12)); err != nil {
+	if err = dc.LoadFontFace(GetAbsDirPath("./fonts/Microsoft_YaHei.ttf"), float64(rd*12)); err != nil {
 		return nil, err
 	}
 	dc.DrawImage(im, 0, 0)

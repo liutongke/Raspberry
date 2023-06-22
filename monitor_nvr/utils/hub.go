@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"fmt"
+	"log"
 	"sync"
 )
 
@@ -34,7 +34,7 @@ func GetHub() *Hub {
 	return clientHub
 }
 
-// 启动hub
+// StartClientHub 启动hub
 func StartClientHub() *Hub {
 	clientHub = newClientHub()
 	go clientHub.run()
@@ -48,6 +48,7 @@ func StartClientHub() *Hub {
 func (h *Hub) run() {
 	for {
 		select {
+		//接收udp处理过来的数据
 		case camInfo := <-h.Ch: //
 			deviceId := camInfo.DeviceId
 			if _, ok := h.Cam[deviceId]; ok { //该终端存在
@@ -58,11 +59,10 @@ func (h *Hub) run() {
 					Break:    false,
 					Idx:      camInfo.Idx,
 				}
-				h.CamLast[deviceId] = GetTime()
+				h.CamLast[deviceId] = GetNowUnix()
 			} else { //不存在创建
-				camList := CamParam()
 				ch := make(chan *Ch, 1000)
-				go RtmpSteamPush(ch, camList[deviceId])
+				go RtmpStreamPush(ch, CamParam()[deviceId], h)
 				ch <- &Ch{
 					DeviceId: deviceId,
 					Data:     camInfo.Data,
@@ -71,35 +71,34 @@ func (h *Hub) run() {
 				}
 				h.Cam[deviceId] = true
 				h.CamCh[deviceId] = ch
-				h.CamLast[deviceId] = GetTime()
+				h.CamLast[deviceId] = GetNowUnix()
 			}
 		case _ = <-h.Heart: //心跳检测
-			currentTime := GetTime()
 			for deviceId, lastTm := range h.CamLast {
 				//fmt.Printf("检测在线设备:%s \n", deviceId)
-				if (currentTime - lastTm) >= 5 {
-					fmt.Printf("踢出连接超时设备:%s", deviceId)
-					h.CamCh[deviceId] <- &Ch{
-						DeviceId: deviceId,
-						Data:     nil,
-						Break:    true,
-					}
-					//删除这些设备
-					delete(h.Cam, deviceId)
-					delete(h.CamCh, deviceId)
-					delete(h.CamLast, deviceId)
+				//if (GetNowUnix() - lastTm) >= 5 {
+				log.Printf("出现异常，踢除设备:%s,最后登录时间：%s", deviceId, GetUnixToStr(lastTm, ""))
+				h.CamCh[deviceId] <- &Ch{
+					DeviceId: deviceId,
+					Data:     nil,
+					Break:    true,
 				}
+				//删除这些设备
+				close(h.CamCh[deviceId])
+				delete(h.Cam, deviceId)
+				delete(h.CamCh, deviceId)
+				delete(h.CamLast, deviceId)
+				//}
 			}
 		}
 	}
 }
 func ClearTimeOutDevice() {
-	currentTime := GetTime()
 	h := GetHub()
 	for deviceId, lastTm := range h.CamLast {
-		//fmt.Printf("检测在线设备:%s \n", deviceId)
-		if (currentTime - lastTm) >= 5 {
-			fmt.Printf("踢出连接超时设备:%s", deviceId)
+		//log.Printf("检测在线设备:%s \n", deviceId)
+		if (GetNowUnix() - lastTm) >= 5 {
+			log.Printf("踢出连接超时设备:%s", deviceId)
 			h.CamCh[deviceId] <- &Ch{
 				DeviceId: deviceId,
 				Data:     nil,

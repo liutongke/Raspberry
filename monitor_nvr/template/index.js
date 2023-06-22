@@ -15,7 +15,7 @@ createApp({
                 url: "/get/video/url",
                 headers: {"x-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6I"},
             }).then(res => {
-                if (res.data.err != 200) {
+                if (res.data.err !== 200) {
                     alert("错误")
                 } else {
                     this.items = res.data.data
