@@ -93,12 +93,6 @@ func getImageNamesInFolder(folderPath string) ([]string, error) {
 	return imageNames, nil
 }
 
-// 判断文件是否为图片文件
-func isImageFile(filePath string) bool {
-	extension := filepath.Ext(filePath)
-	return extension == ".jpg" || extension == ".jpeg" || extension == ".png" || extension == ".gif" || extension == ".bmp"
-}
-
 // 自然排序比较函数
 func naturalLess(s1, s2 string) bool {
 	parts1 := strings.Split(s1, ".")

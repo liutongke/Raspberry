@@ -76,19 +76,8 @@ func (h *Hub) run() {
 		case _ = <-h.Heart: //心跳检测
 			for deviceId, lastTm := range h.CamLast {
 				//fmt.Printf("检测在线设备:%s \n", deviceId)
-				//if (GetNowUnix() - lastTm) >= 5 {
 				log.Printf("出现异常，踢除设备:%s,最后登录时间：%s", deviceId, GetUnixToStr(lastTm, ""))
-				h.CamCh[deviceId] <- &Ch{
-					DeviceId: deviceId,
-					Data:     nil,
-					Break:    true,
-				}
-				//删除这些设备
-				close(h.CamCh[deviceId])
-				delete(h.Cam, deviceId)
-				delete(h.CamCh, deviceId)
-				delete(h.CamLast, deviceId)
-				//}
+				h.kickOutDevice(deviceId) //踢除设备
 			}
 		}
 	}
@@ -99,15 +88,21 @@ func ClearTimeOutDevice() {
 		//log.Printf("检测在线设备:%s \n", deviceId)
 		if (GetNowUnix() - lastTm) >= 5 {
 			log.Printf("踢出连接超时设备:%s", deviceId)
-			h.CamCh[deviceId] <- &Ch{
-				DeviceId: deviceId,
-				Data:     nil,
-				Break:    true,
-			}
-			//删除这些设备
-			delete(h.Cam, deviceId)
-			delete(h.CamCh, deviceId)
-			delete(h.CamLast, deviceId)
+			h.kickOutDevice(deviceId) //踢除设备
 		}
 	}
+}
+
+// 踢掉离线设备
+func (h *Hub) kickOutDevice(deviceId string) {
+	h.CamCh[deviceId] <- &Ch{
+		DeviceId: deviceId,
+		Data:     nil,
+		Break:    true,
+	}
+	//删除这些设备
+	close(h.CamCh[deviceId])
+	delete(h.Cam, deviceId)
+	delete(h.CamCh, deviceId)
+	delete(h.CamLast, deviceId)
 }
