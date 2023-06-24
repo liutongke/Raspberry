@@ -7,11 +7,12 @@
 @version：Python 3.11.2
 @title: 
 """
-import config
+import machine
 
 
 def get_device_info():
-    device_id = config.get_device_id()
+    machine_unique_id = machine.unique_id()  # 获取设备唯一标识符
+    device_id = ''.join(['{:02x}'.format(byte) for byte in machine_unique_id])  # 转换为十六进制字符串
     return device_id, len(device_id)
 
 
