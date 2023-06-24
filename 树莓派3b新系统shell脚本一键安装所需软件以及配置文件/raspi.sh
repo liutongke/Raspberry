@@ -1,5 +1,9 @@
 #!/bin/bash
 #自动化更新国内源、安装docker、安装syncthing、安装supervisord并设置开机启动
+
+#lite无桌面版本，要在更换国内源之前执行
+sudo apt install python3-pip -y
+
 # 修改 sources.list 文件
 sudo tee /etc/apt/sources.list >/dev/null <<EOL
 deb https://mirrors.tuna.tsinghua.edu.cn/debian buster main contrib non-free
@@ -7,9 +11,18 @@ deb https://mirrors.tuna.tsinghua.edu.cn/debian-security/ buster/updates main co
 deb https://mirrors.tuna.tsinghua.edu.cn/debian buster-updates main contrib non-free
 EOL
 
+#sudo tee /etc/apt/sources.list >/dev/null <<EOL
+#deb https://mirrors.tuna.tsinghua.edu.cn/debian buster main contrib non-free
+#deb https://mirrors.tuna.tsinghua.edu.cn/debian-security/ buster/updates main contrib non-free
+#deb https://mirrors.tuna.tsinghua.edu.cn/debian buster-updates main contrib non-free
+#EOL
+
 # 修改 raspi.list 文件
 sudo sed -i 's|^deb .*|deb http://mirrors.tuna.tsinghua.edu.cn/raspberrypi/ buster main ui|' /etc/apt/sources.list.d/raspi.list
 sudo sed -i 's|^deb-src .*|deb-src http://mirrors.tuna.tsinghua.edu.cn/raspberrypi/ buster main ui|' /etc/apt/sources.list.d/raspi.list
+
+#sudo sed -i 's|^deb .*|deb http://mirrors.tuna.tsinghua.edu.cn/raspberrypi/ buster main ui|' /etc/apt/sources.list.d/raspi.list
+#sudo sed -i 's|^deb-src .*|deb-src http://mirrors.tuna.tsinghua.edu.cn/raspberrypi/ buster main ui|' /etc/apt/sources.list.d/raspi.list
 
 sudo apt-get update -y
 sudo apt-get upgrade -y
@@ -57,7 +70,7 @@ else
 fi
 
 #创建bridge网络
-#docker network create pi-dashboard-net
+#sudo docker network create pi-dashboard-net
 #创建nginx
 #sudo docker run --name nginx1 --network pi-dashboard-net --network-alias pi-dashboard-nginx --restart always -p 80:80 -v /var/www/html:/usr/share/nginx/html -v /var/www/nginx:/etc/nginx/conf.d -d nginx
 #创建php
