@@ -8,7 +8,7 @@ import (
 	"strconv"
 )
 
-func Http() {
+func Http(h *Hub) {
 	var router *gin.Engine
 
 	if IsDebug() { //开发模式
@@ -53,7 +53,7 @@ func Http() {
 		})
 	})
 
-	router.GET("/stream", streamHandler)
+	router.GET("/stream", h.streamHandler)
 	router.Run(":9091")
 }
 

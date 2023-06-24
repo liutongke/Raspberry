@@ -9,6 +9,7 @@ import (
 func StartUdp() {
 	InitDir()
 	hub := StartClientHub()
+	go Http(hub)
 	Task(hub) //启动定时任务
 
 	listen, err := net.ListenUDP("udp", &net.UDPAddr{
@@ -39,6 +40,11 @@ func StartUdp() {
 
 		//发送给ffmpeg推流处理
 		hub.Ch <- &Ch{
+			DeviceId: deviceId,
+			Data:     byteData,
+			Idx:      GetMicroseconds(),
+		}
+		hub.MjpgStream <- &Ch{
 			DeviceId: deviceId,
 			Data:     byteData,
 			Idx:      GetMicroseconds(),

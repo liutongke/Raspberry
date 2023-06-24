@@ -11,6 +11,7 @@ var clientHub *Hub
 type Hub struct {
 	Pool        *Pool
 	Ch          chan *Ch
+	MjpgStream  chan *Ch
 	Cam         map[string]bool     //device_id=>True
 	CamCh       map[string]chan *Ch //device_id=>ch
 	CamLast     map[string]int64    //device_id=>上一次登录时间
@@ -20,11 +21,12 @@ type Hub struct {
 
 func newClientHub() *Hub {
 	return &Hub{
-		Ch:      make(chan *Ch, 1000),
-		Cam:     make(map[string]bool),
-		CamCh:   make(map[string]chan *Ch, 1000),
-		CamLast: make(map[string]int64),
-		Heart:   make(chan int, 100),
+		Ch:         make(chan *Ch, 1000),
+		MjpgStream: make(chan *Ch, 1000),
+		Cam:        make(map[string]bool),
+		CamCh:      make(map[string]chan *Ch, 1000),
+		CamLast:    make(map[string]int64),
+		Heart:      make(chan int, 100),
 	}
 }
 

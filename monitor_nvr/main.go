@@ -5,6 +5,6 @@ import (
 )
 
 func main() {
-	go utils.StartUdp() // UDP server端
-	utils.Http()        //http
+	utils.StartUdp() // UDP server端
+	//utils.Http()     //http
 }
