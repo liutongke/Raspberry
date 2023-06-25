@@ -56,7 +56,8 @@ func AddWatermarkPic(pic []byte, waterDesc string) ([]byte, error) {
 	dc.DrawImage(im, 0, 0)
 	dc.SetHexColor("#64FF00") // 设置画笔颜色为绿色
 	dc.Push()
-	dc.DrawString(waterDesc, float64(550), float64(580)) //水印显示位置
+	//dc.DrawString(waterDesc, float64(550), float64(580)) //水印显示位置
+	dc.DrawString(waterDesc, float64(550), float64(70)) //水印显示位置
 	dc.Pop()
 
 	buf := new(bytes.Buffer)                // 创建一个缓冲区来保存图像字节流

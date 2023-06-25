@@ -25,9 +25,9 @@ func CamParam() map[string]Cam {
 			Video:       ".video",
 		},
 		"RaspberryPi": {
-			Fps:         6,
-			Width:       800,
-			Height:      600,
+			Fps:         30,
+			Width:       1280,
+			Height:      720,
 			RtmpUrl:     "rtmp://192.168.1.107:1935/live/raspi-3b",
 			VideoFlvUrl: "http://192.168.1.107:8080/live/raspi-3b.flv",
 			Video:       ".video1",

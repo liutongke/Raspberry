@@ -16,4 +16,4 @@ fi
 sudo docker build -t monitor_nvr_go:v1 .
 
 # 运行 Docker 容器
-sudo docker run --name monitor_nvr_go_v1 -itd -p 12349:12349 -p 9090:9090/udp -v $data_dir:/var/www/html/data monitor_nvr_go:v1
+sudo docker run --name monitor_nvr_go_v1 -itd -p 9091:9091 -p 9090:9090/udp -v $data_dir:/var/www/html/data monitor_nvr_go:v1

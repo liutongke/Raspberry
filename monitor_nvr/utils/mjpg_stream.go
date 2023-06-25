@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 )
@@ -17,30 +18,33 @@ func (h *Hub) streamHandler(context *gin.Context) {
 	for {
 		select {
 		case v := <-h.MjpgStream:
-			imageData := v.Data
-			// 读取图像数据
-			//imageData, err := readImage()
-			//if err != nil {
-			//	fmt.Println("Failed to read image:", err)
-			//	return
-			//}
+			imageData, err := AddWatermarkPic(v.Data, GetNowStr())
+			if err != nil {
+				log.Printf("MjpgStream AddWatermarkPic err:%v", err)
+				continue
+			} else {
+				//imageData := v.Data
+				// 读取图像数据
+				//imageData, err := readImage()
+				//if err != nil {
+				//	fmt.Println("Failed to read image:", err)
+				//	return
+				//}
 
-			// 写入分隔符和图像数据
-			fmt.Fprintf(context.Writer, "--boundarydonotcross\r\n")
-			fmt.Fprintf(context.Writer, "Content-Type: image/jpeg\r\n")
-			fmt.Fprintf(context.Writer, "Content-Length: %d\r\n\r\n", len(imageData))
-			context.Writer.Write(imageData)
+				// 写入分隔符和图像数据
+				fmt.Fprintf(context.Writer, "--boundarydonotcross\r\n")
+				fmt.Fprintf(context.Writer, "Content-Type: image/jpeg\r\n")
+				fmt.Fprintf(context.Writer, "Content-Length: %d\r\n\r\n", len(imageData))
+				context.Writer.Write(imageData)
 
-			// 强制刷新缓冲区，将数据发送到客户端
-			flusher, ok := context.Writer.(http.Flusher)
-			if !ok {
-				fmt.Println("Flusher not supported")
-				return
+				// 强制刷新缓冲区，将数据发送到客户端
+				flusher, ok := context.Writer.(http.Flusher)
+				if !ok {
+					fmt.Println("Flusher not supported")
+					return
+				}
+				flusher.Flush()
 			}
-			flusher.Flush()
-
-			// 暂停一段时间
-			//time.Sleep(100 * time.Millisecond)
 		}
 
 	}
