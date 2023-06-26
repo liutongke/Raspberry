@@ -12,5 +12,5 @@ if exist "%data_dir%" (
   echo Create a directory: %data_dir%
 )
 
-docker build -t monitor_nvr_go:v1 .
-docker run --name monitor_nvr_go_v1 -itd  -p 12349:12349 -p 9090:9090/udp -v %data_dir%:/var/www/html/data monitor_nvr_go:v1
+docker build -t go_monitor_nvr:v1 .
+docker run --name go_monitor_nvr_v1 -itd  -p 9091:9091 -p 9090:9090/udp -v %data_dir%:/var/www/html/data go_monitor_nvr:v1

@@ -12,7 +12,9 @@ import (
 func main() {
 	log.Println("开始")
 	// 执行 libcamera-vid 命令，并通过管道获取输出流
-	cmd := exec.Command("libcamera-vid", "-t", "5000", "--codec", "mjpeg", "-o", "-")
+	//cmd := exec.Command("libcamera-vid", "-t", "5000", "--codec", "mjpeg", "-o", "-")
+	cmd := exec.Command("libcamera-vid", "-t", "5000", "--codec", "mjpeg", "-o", "-", "--width", "800", "--height", "600")
+
 	stdoutPipe, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)

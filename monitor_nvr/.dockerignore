@@ -3,6 +3,6 @@
 .git
 /test
 start.bat
-start.sh
+monitor_nvr.sh
 test.bat
 video

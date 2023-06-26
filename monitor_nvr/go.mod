@@ -5,7 +5,10 @@ go 1.20
 require (
 	github.com/fogleman/gg v1.3.0
 	github.com/gin-gonic/gin v1.9.1
+	github.com/hybridgroup/mjpeg v0.0.0-20140228234708-4680f319790e
 	github.com/icza/mjpeg v0.0.0-20230330134156-38318e5ab8f4
+	github.com/julienschmidt/httprouter v1.3.0
+	gocv.io/x/gocv v0.33.0
 )
 
 require (
