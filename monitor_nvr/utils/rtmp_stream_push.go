@@ -9,7 +9,7 @@ import (
 	"strconv"
 )
 
-type Ch struct {
+type RtmpStreamPushCh struct {
 	DeviceId string
 	Data     []byte
 	Break    bool
@@ -17,7 +17,7 @@ type Ch struct {
 }
 
 // RtmpStreamPush 将处理完后的图片推流到rtmp服务器
-func RtmpStreamPush(ch chan *Ch, cam Cam, h *Hub) {
+func RtmpStreamPush(RtmpStreamPushCh chan *RtmpStreamPushCh, cam Cam, h *Hub) {
 	log.Println("开始推流")
 	// 创建FFmpeg命令
 	ffmpegCmd := exec.Command("ffmpeg",
@@ -56,7 +56,7 @@ func RtmpStreamPush(ch chan *Ch, cam Cam, h *Hub) {
 	// 逐个推送图片帧
 	for {
 		select {
-		case v := <-ch:
+		case v := <-RtmpStreamPushCh:
 			if v.Break { //结束
 				goto stopFfmpeg
 			}

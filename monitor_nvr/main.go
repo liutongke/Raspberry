@@ -1,12 +1,16 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"monitor/nvr/utils"
 )
 
 func main() {
-	log.Printf("start udp port:%d start http port:%d", 9090, 9091)
+	utils.EchoSuccess(fmt.Sprintf("start http port:%d start udp port:%d", utils.ServerPort(), utils.UdpPort()))
+
+	if utils.IsRaspi() {
+		utils.StartRaspiCam()
+	}
 	utils.StartUdp() // UDP server端
 	//utils.Http()     //http
 }

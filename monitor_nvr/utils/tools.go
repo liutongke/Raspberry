@@ -117,3 +117,12 @@ func naturalLess(s1, s2 string) bool {
 	// 如果前缀部分完全相同，长度较短的字符串更小
 	return len(parts1) < len(parts2)
 }
+
+// IsRaspi 当前环境是否是树莓派
+func IsRaspi() bool {
+	hostname, err := os.Hostname()
+	if err != nil {
+		return false
+	}
+	return hostname == "raspberrypi"
+}

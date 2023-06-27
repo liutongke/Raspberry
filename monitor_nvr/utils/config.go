@@ -14,13 +14,20 @@ type Cam struct {
 	Video       string //前端的class节点
 }
 
+func init() {
+	for deviceId, _ := range CamParam() {
+		MkDirAll(fmt.Sprintf("%s%s", ImagePath(), deviceId))
+		MkDirAll(fmt.Sprintf("%s%s", VideoPath(), deviceId))
+	}
+}
+
 func CamParam() map[string]Cam {
 	conf := map[string]Cam{
 		"a0b765593494": {
 			Fps:         6,
 			Width:       800,
 			Height:      600,
-			RtmpUrl:     "rtmp://192.168.1.107:1935/live/esp32",
+			RtmpUrl:     "rtmp://192.168.1.106:1935/live/esp32",
 			VideoFlvUrl: "http://192.168.1.107:8080/live/esp32.flv",
 			Video:       ".video",
 		},
@@ -28,19 +35,12 @@ func CamParam() map[string]Cam {
 			Fps:         30,
 			Width:       1280,
 			Height:      720,
-			RtmpUrl:     "rtmp://192.168.1.107:1935/live/raspi-3b",
+			RtmpUrl:     "rtmp://192.168.1.106:1935/live/raspi-3b",
 			VideoFlvUrl: "http://192.168.1.107:8080/live/raspi-3b.flv",
 			Video:       ".video1",
 		},
 	}
 	return conf
-}
-
-func InitDir() {
-	for deviceId, _ := range CamParam() {
-		MkDirAll(fmt.Sprintf("%s%s", ImagePath(), deviceId))
-		MkDirAll(fmt.Sprintf("%s%s", VideoPath(), deviceId))
-	}
 }
 
 func GetRunDirPath() string {
@@ -58,13 +58,13 @@ func VideoPath() string {
 	return fmt.Sprintf("%s/data/video/", GetRunDirPath())
 }
 
-// 保留多长时间视频资料
+// KeepVideoTm 保留多长时间视频资料
 func KeepVideoTm() int {
 	return 24 * 10
 }
 
 func IsDebug() bool {
-	return true
+	return false
 }
 
 // SaveVideo 是否开启保存视频，srs如果开了DVR功能可以关闭 false关闭true开启
@@ -75,4 +75,11 @@ func SaveVideo() bool {
 // SavePic 是否开启保存每帧照片 false关闭true开启
 func SavePic() bool {
 	return false
+}
+
+func ServerPort() int {
+	return 9091
+}
+func UdpPort() int {
+	return 9090
 }
