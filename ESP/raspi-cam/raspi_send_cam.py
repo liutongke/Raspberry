@@ -8,25 +8,23 @@
 @title: 树莓派通过udp发送照片
 """
 
-import subprocess as sp
+import io
 import socket
-import cv2
-import io
-from PIL import Image
-import numpy as np
 import time
+
+import cv2
 from PIL import Image
-import io
+
 import byte_stream
 import config
 
 
 def run():
     cap = cv2.VideoCapture(0)
-
+    frame = 15
     cap.set(3, 800)  # 摄像头采集图像的宽度320
     cap.set(4, 600)  # 摄像头采集图像的高度240
-    cap.set(5, 10)  # 摄像头采集图像的帧率fps为30
+    cap.set(5, frame)  # 摄像头采集图像的帧率fps为30
 
     # 查看采集图像的参数
     print(cap.get(3))
@@ -38,7 +36,7 @@ def run():
 
     # 获取发送缓冲区大小
     send_buffer_size = s.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF)
-    elapsed_time = 1 / 10
+    elapsed_time = 1 / frame
     # 打印接收缓冲区大小和发送缓冲区大小
     print("接收缓冲区大小:", recv_buffer_size)
     print("发送缓冲区大小:", send_buffer_size)
@@ -55,7 +53,7 @@ def run():
         send_data = byte_stream.encode_payload(ys_jpeg_data)
 
         s.sendto(send_data, (config.get_server_ip(), config.get_server_port()))  # 向服务器发送图像数据
-        time.sleep(elapsed_time)
+        time.sleep(0.1)
 
 
 '''

@@ -69,26 +69,23 @@ def get_device_info():
     return device_id, len(device_id)
 
 
-import ustruct
-
-
 def encode_payload(payload):
     device_id, device_id_len = get_device_info()
-    merged_data_stream = bytearray(4 + len(device_id) + len(payload))  # 预分配足够的字节流空间
-    # 将设备ID长度转换为字节流，并写入到字节数组
-    ustruct.pack_into('>I', merged_data_stream, 0, device_id_len)
-    # 将设备ID的字节流写入到字节数组
-    merged_data_stream[4:4 + len(device_id)] = bytes(device_id, 'utf-8')
-    # 将payload的字节流写入到字节数组
-    merged_data_stream[4 + len(device_id):] = bytes(payload, 'utf-8')
+    device_id_len_byte_data = device_id_len.to_bytes(4, 'big')  # 将整数转换为字节流
+    device_id_byte_data = bytes(device_id, 'utf-8')  # 将字符串转换为字节流
+    payload_byte_data = bytes(payload, 'utf-8')  # 将字符串转换为字节流
+
+    merged_data_stream = bytearray(device_id_len_byte_data) + bytearray(device_id_byte_data) + bytearray(
+        payload_byte_data)  # 合并字节流
     return merged_data_stream
 
 
 try:
     while True:
-        s.sendto(encode_payload(camera.capture()),
+        buf = camera.capture()  # 获取图像数据
+        s.sendto(encode_payload(buf),
                  ("192.168.1.106", 9090))  # 向服务器发送图像数据
-        time.sleep_ms(10)  # 暂停十毫秒
+        time.sleep(0.1)
 except:
     pass
 finally:
