@@ -37,6 +37,7 @@ async def ran_control_callback(msg):
     var = msg["ran-val"]
     if var == 50:
         print("shutdown")
+        control.shutdown_raspberry_pi()
     elif var == 100:
         print("The user initiates a restart request")
         control.reboot_raspberry_pi()
@@ -74,7 +75,8 @@ async def ready_func():
                 "total_memory": {"tex": "总内存", "val": memory_info["total_memory"]},
                 "available_memory": {"tex": "可用内存", "val": memory_info["available_memory"]},
                 "used_memory": {"tex": "已用内存", "val": memory_info["used_memory"]},
-                "memory_percent": {"tex": "内存使用率", "val": memory_info["memory_percent"]}
+                "memory_percent": {"tex": "内存使用率", "val": memory_info["memory_percent"]},
+                "available_space": {"tex": "可用磁盘", "val": sys_info.get_available_space()},
             }
             data = msg
             await device.sendMessage(msg, deviceName)
