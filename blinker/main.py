@@ -8,6 +8,7 @@ from blinker import Device, ButtonWidget, RangeWidget
 
 import config
 import control
+import lux
 import sys_info
 import temp_hum
 
@@ -77,6 +78,7 @@ async def ready_func():
                 "used_memory": {"tex": "已用内存", "val": memory_info["used_memory"]},
                 "memory_percent": {"tex": "内存使用率", "val": memory_info["memory_percent"]},
                 "available_space": {"tex": "可用磁盘", "val": sys_info.get_available_space()},
+                "lux": {"tex": "光线强度", "val": lux.read_light_intensity()},
             }
             data = msg
             await device.sendMessage(msg, deviceName)
