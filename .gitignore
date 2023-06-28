@@ -25,3 +25,8 @@
 /ESP/monitor/images
 /ESP/monitor/video
 /ESP/monitor_nvr_process_python/config.py
+/conf
+/srs
+/Pico/oled/config.py
+/monitor_nvr/monitor
+/monitor_nvr/pic
