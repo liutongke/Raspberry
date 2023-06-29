@@ -1,17 +1,9 @@
-import urequests as requests
 import json
+
+import urequests as requests
 
 import Tools
 import config
-import ntptime
-import time
-import utime
-import time
-import utime
-import machine
-from ntptime import settime
-import os
-import oled
 import tm
 
 
@@ -115,6 +107,13 @@ def get_wannianli():
 
 
 def get_request_wannianli():
+    dateId = tm.dateId()
+
+    weather_url = f"https://api.topthink.com/calendar/day?appCode={config.get_topthink_api_key()}&date={dateId}"
+
+    response = requests.get(url=weather_url).json()
+
+    return response['data']
     # data = {
     #     "animalsYear": "兔",
     #     "weekday": "星期一",
@@ -129,13 +128,6 @@ def get_request_wannianli():
     # }
     # print("get_request_wannianli request")
     # return data
-    dateId = tm.dateId()
-
-    weather_url = f"https://api.topthink.com/calendar/day?appCode={config.get_topthink_api_key()}&date={dateId}"
-
-    response = requests.get(url=weather_url).json()
-
-    return response['data']
 
 
 def get_base_weather(extensions_type=0):
@@ -157,7 +149,28 @@ def get_base_weather(extensions_type=0):
     return data
 
 
+EXTENSIONS_BASE = "base"
+EXTENSIONS_ALL = "all"
+
+
 def get_weather(extensions_type=0):
+    extensions = EXTENSIONS_ALL if extensions_type == 1 else EXTENSIONS_BASE
+
+    weather_url = f"https://restapi.amap.com/v3/weather/weatherInfo?key={config.gaode_key()}&city={get_city_code()}&extensions={extensions}"
+
+    try:
+        response = requests.get(url=weather_url).json()
+        return response['lives'][0]
+    except (requests.RequestException, KeyError) as e:
+        # 处理请求异常或键错误
+        # print(f"Error: {e}")
+        import logger
+        logger.save_log(f"Error: {e}")
+        file_name = 'weather.txt'
+        # 请求有问题的话就返回一个就的回去
+        d = json_decode(Tools.read_file(file_name))
+        return d['data']
+    # return response['data']
     # return {
     #     "province":
     #         "上海",
@@ -182,13 +195,6 @@ def get_weather(extensions_type=0):
     #     "humidity_float":
     #         "95.0"
     # }
-    extensions = "all" if extensions_type == 1 else "base"
-    weather_url = f"https://restapi.amap.com/v3/weather/weatherInfo?key={config.gaode_key()}&city={get_city_code()}&extensions={extensions}"
-    # weather_url = f"http://192.168.1.105:9500/"
-    response = requests.get(url=weather_url).json()
-
-    return response['lives'][0]
-    # return response['data']
 
 
 def get_all_weather(extensions_type=1):
