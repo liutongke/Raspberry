@@ -4,6 +4,103 @@
 **开发板：树莓派3b（Raspberry Pi 3b）**
 **系统版本：Raspberry Pi OS 64 位（Raspbian）**
 
+# 查看摄像头
+
+<span style="color: red;"><span style="font-size: 24px;">树莓派3b刷完新系统不需要任何设置，默认打开`libcamera`，不需要`sudo raspi-config
+`中打开摄像头，调用摄像头指示灯，都属于正常现象。也不要使用国内源设置，否则安装blinker后会导致`libcamera`失效报错</span></span>
+
+```sh
+ls /dev/video*
+```
+
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230427151415.png)
+
+## Streaming Video 直播视频
+树莓派输入：
+```sh
+libcamera-vid -t 0 --inline --listen -o tcp://0.0.0.0:8888
+```
+播放器输入
+```sh
+tcp/h264://树莓派地址:8888
+```
+
+```sh
+vcgencmd get_camera
+```
+**supported = 1 detected = 0
+supported = 0未开启摄像头
+detected = 0 表明没有接入摄像头设备**
+设置新版摄像头的话detected就为0无法使用ffmpeg推流
+
+# 查看摄像头返回数据格式
+树莓派摄像头 `/dev/video0` 返回的是视频流数据，通常是以图像帧的形式传输。每一帧可以使用不同的图像格式进行编码，例如常见的 JPEG、YUV、RGB 等。
+
+要确定 `/dev/video0` 返回的确切格式，你可以使用一些图像处理库或工具来读取并解码视频帧。在 Linux 上，你可以使用 `v4l-utils` 包中的工具来获取有关视频流的详细信息。以下是一个使用 `v4l2-ctl` 命令查看 `/dev/video0` 格式的示例：
+
+```
+sudo apt install v4l-utils -y
+
+v4l2-ctl --list-formats-ext -d /dev/video0
+```
+
+该命令将显示有关 `/dev/video0` 支持的不同格式、分辨率和帧率的信息。
+
+请注意，具体的视频格式可能会根据你的系统配置、摄像头型号以及所使用的驱动程序而有所不同。因此，确切的格式可能会因情况而异。
+
+# 新版报错系统设置摄像头
+
+调用`libcamera`命令拍照出现<span style="color: red;">**`ERROR: the system appears to be configured for the legacy camera stack
+`**</span>报错，这是由于在最新的树莓派系统中已经从基于专有 Broadcom GPU 代码的传统相机软件堆栈过渡到基于libcamera的开源堆栈，也就说未来会使用libcamera来替代。libcamera是一个旨在直接从Linux操作系统支持复杂的相机系统的软件库。对于Raspberry Pi，它使我们能够直接从在ARM处理器上运行的开源代码驱动相机系统。
+
+### 解决方法
+
+在`/boot/config.txt`文件中添加`dtoverlay`字段
+```
+sudo sed -i '/^display_auto_detect=1$/a dtoverlay=ov5647' /boot/config.txt
+```
+
+![根据摄像头配置](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230427121348.png)
+
+#### [dtoverlay字段与摄像头对照表](https://www.raspberrypi.com/documentation/computers/camera_software.html)：如下
+
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230427121445.png)
+查看PCF8591器件的地址(硬件地址 由器件决定) 
+
+
+保存视频十秒钟的视频
+```sh
+libcamera-vid -t 10000 -o test.h264
+```
+
+拍摄照片
+```sh
+libcamera-jpeg -o test.jpg
+```
+
+# 使用Picamera2拍照
+[Picamera2 手册中](https://datasheets.raspberrypi.com/camera/picamera2-manual.pdf)
+[Python 绑定libcamera](https://www.raspberrypi.com/documentation/computers/camera_software.html#python-bindings-for-libcamera)
+## 快速拍照并保存，不需要预览
+```python
+from picamera2 import Picamera2, Preview
+picam2 = Picamera2()
+camera_config = picam2.create_preview_configuration()
+picam2.configure(camera_config)
+picam2.start()
+picam2.capture_file("test.jpg")
+```
+
+## 快速录制视频并保存，不需要预览
+```python
+from picamera2 import Picamera2
+picam2 = Picamera2()
+picam2.start_and_record_video("test.mp4", duration=5) #视频格式mp4,长度5秒
+```
+
+## OSError: libmmal.so: cannot open shared object file: No such file or directory
+https://segmentfault.com/a/1190000040009665
+
 # Windwos使用工具
 
 https://learn.microsoft.com/zh-cn/sysinternals/downloads/tcpview
@@ -34,8 +131,41 @@ https://learn.microsoft.com/zh-cn/sysinternals/downloads/tcpview
 - `COMMAND`：启动进程的命令行。
 
 
+# 安装Go
+```
+wget https://go.dev/dl/go1.20.5.linux-arm64.tar.gz
 
-# Go编译树莓派运行程序
+sudo tar -C /usr/local/ -zxvf go1.20.5.linux-arm64.tar.gz
+
+#在`~/.bashrc`文件的末尾添加以下内容：
+echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
+echo 'export GOPATH=$HOME/go' >> ~/.bashrc
+
+然后，您需要更新当前终端的环境变量，使新添加的内容生效。可以运行以下命令来实现：
+source ~/.bashrc
+
+验证
+echo $GOPATH
+```
+重启系统后`go versioin`验证。
+
+## Go更换源
+
+```sh
+#配置 GOPROXY 环境变量：
+go env -w GOPROXY=https://goproxy.cn,direct
+
+#验证：
+go env | grep GOPROXY
+
+#测试：
+time go get golang.org/x/tour
+```
+
+
+本地如果有模块缓存，可以使用命令清空`go clean --modcache`
+
+# Go编译树莓派运行程序：
 
 ```sh
 SET CGO_ENABLED=0
@@ -45,17 +175,27 @@ SET GOARM=7
 go build -o tinypng main.go Tinypng.go
 ```
 
-# 更换python软连接 {#apt-get-pip}
+# Python更换软连接 {#apt-get-pip}
 ```sh
-https://blog.csdn.net/qq_42887760/article/details/100997264
+cd /usr/bin
+
+ls -al *python*
+
+sudo rm python
+
+ln -s python3.9
 ```
 
+[参考连接](https://blog.csdn.net/qq_42887760/article/details/100997264)
 
-# python更换国内源
+![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230624220831.png)
+
+# Python更换国内源
+
 ```sh
 pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple/
 ```
-
+/home/keke/.config/pip/pip.conf
 # lite版本系统python3安装pip
 
 要在更换国内源之前执行
@@ -109,14 +249,15 @@ priority=1
 
 根据 Raspberry Pi OS Bullseye 的4月更新说明，经典的 pi 用户名和 raspberry 已经被取消，用户想要使用树莓派通过HDMI连接显示器设置初始化。
 
-## 解决方法：
+## 使用官方系统工具刷系统，初始化系统
 使用官方提供的系统安装工具（Raspberry Pi Imager）在刷系统的时候可以通过「设置」来指定用户名和密码。[Raspberry Pi Imager下载地址](https://www.raspberrypi.com/software/)
 
 ![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230623055329.png)
 
 
-
 # 树莓派更换国内源
+
+<span style="font-size: 24px;"><span style="color: rgb(255, 41, 65); font-size: 24px;">**如果想同时安装blinker-py和使用libcamera摄像头则不能更换国内源**</span></span>
 
 树莓派的所有软件源地址：https://www.raspbian.org/RaspbianMirrors
 
@@ -211,7 +352,7 @@ sudo docker volume create portainer_data
 
 ```
 
-# docker更换国内源,新建或者修改`/etc/docker/daemon.json`
+# Docker更换国内源,新建或者修改`/etc/docker/daemon.json`
 ```
 {
     "registry-mirrors": [
@@ -237,7 +378,7 @@ sudo docker run -d -p 10000:9000 --name portainer --restart always -v /var/run/d
 
 [pi-dashboard下载地址：](https://github.com/nxez/pi-dashboard)
 
-
+旧版本`portainer`，官方已停止维护。
 ```sh
 #创建bridge网络
 docker network create pi-dashboard-net 
@@ -250,6 +391,18 @@ sudo docker run --name php2 --network pi-dashboard-net --network-alias pi-dashbo
 #将nginx移除mynet局域网络
 docker network disconnect 创建的bridge 对应的network-alias
 
+```
+
+使用新版本`portainer-ce`一键安装sh脚本：
+```sh
+#!/bin/bash
+
+docker pull portainer/portainer-ce
+
+#创建 portainer 容器
+sudo docker volume create portainer_data
+#运行 portainer
+sudo docker run -d -p 10000:9000 --name portainer --restart always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce
 ```
 ## 一键安装PHP+nginx脚本：
 ```sh
@@ -405,8 +558,11 @@ sudo pip install  supervisor
 ```
 2. 创建文件夹并上传配置文件到对应的文件夹，配置文件也可以通过命令行生成
 ```
-/etc/supervisor
-/etc/supervisor/conf.d
+
+sudo mkdir -p /etc/supervisor/conf.d
+sudo mkdir -p /home/keke/supervisor_log
+sudo mkdir -p /var/log/supervisor
+
 ```
 
 
@@ -458,7 +614,7 @@ autorestart=True      ; 程序异常退出后自动重启
 autostart=True        ; 在 supervisord 启动的时候也自动启动
 redirect_stderr=True  ; 把 stderr 重定向到 stdout，默认 false
 environment=STNORESTART="1", HOME="/home/keke"  ; 可以通过 environment 来添加需要的环境变量，一种常见的用法是使用指定的 virtualenv 环境
-command=python3 /var/www/blinker/helloworld.py ; 启动命令，与手动在命令行启动的命令是一样的
+command=python3 /var/www/blinker/main.py ; 启动命令，与手动在命令行启动的命令是一样的
 user=root           ; 用哪个用户启动
 directory=/var/www/blinker/  ; 程序的启动目录
 stdout_logfile_maxbytes = 20MB  ; stdout 日志文件大小，默认 50MB
@@ -534,85 +690,6 @@ sudo fdisk -l                           #查看磁盘信息
 sudo fuser -m /dev/sda1                 #查看占用的进程（磁盘被程序占用）
 sudo mount /dev/sda1 /home/keke/disk1/  #挂载磁盘
 ```
-
-# 查看摄像头
-```
-ls /dev/video*
-```
-
-![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230427151415.png)
-
-
-
-
-
-## Streaming Video 直播视频
-树莓派输入：
-```sh
-libcamera-vid -t 0 --inline --listen -o tcp://0.0.0.0:8888
-```
-播放器输入
-```sh
-tcp/h264://树莓派地址:8888
-```
-
-```sh
-vcgencmd get_camera
-```
-**supported = 1 detected = 0
-supported = 0未开启摄像头
-detected = 0 表明没有接入摄像头设备**
-设置新版摄像头的话detected就为0无法使用ffmpeg推流
-
-# 新版系统设置摄像头
-
-调用`libcamera`命令拍照出现`ERROR: the system appears to be configured for the legacy camera stack
-`报错，这是由于在最新的树莓派系统中已经从基于专有 Broadcom GPU 代码的传统相机软件堆栈过渡到基于libcamera的开源堆栈，也就说未来会使用libcamera来替代。libcamera是一个旨在直接从Linux操作系统支持复杂的相机系统的软件库。对于Raspberry Pi，它使我们能够直接从在ARM处理器上运行的开源代码驱动相机系统。
-
-### 解决方法
-
-在`/boot/config.txt`文件中添加`dtoverlay`字段
-
-![根据摄像头配置](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230427121348.png)
-
-#### [dtoverlay字段与摄像头对照表](https://www.raspberrypi.com/documentation/computers/camera_software.html)：如下
-
-![Img](https://raw.githubusercontent.com/liutongke/Image-Hosting/master/images/yank-note-picgo-img-20230427121445.png)
-查看PCF8591器件的地址(硬件地址 由器件决定) 
-
-
-保存视频十秒钟的视频
-```sh
-libcamera-vid -t 10000 -o test.h264
-```
-
-拍摄照片
-```sh
-libcamera-jpeg -o test.jpg
-```
-
-# 使用Picamera2拍照
-[Picamera2 手册中](https://datasheets.raspberrypi.com/camera/picamera2-manual.pdf)
-[Python 绑定libcamera](https://www.raspberrypi.com/documentation/computers/camera_software.html#python-bindings-for-libcamera)
-## 快速拍照并保存，不需要预览
-```python
-from picamera2 import Picamera2, Preview
-picam2 = Picamera2()
-camera_config = picam2.create_preview_configuration()
-picam2.configure(camera_config)
-picam2.start()
-picam2.capture_file("test.jpg")
-```
-
-## 快速录制视频并保存，不需要预览
-```python
-from picamera2 import Picamera2
-picam2 = Picamera2()
-picam2.start_and_record_video("test.mp4", duration=5) #视频格式mp4,长度5秒
-```
-
-# OSError: libmmal.so: cannot open shared object file: No such file or directory
-https://segmentfault.com/a/1190000040009665
 
 # [调整swap分区大小](https://www.cnblogs.com/varden/p/15409542.html)
 
@@ -968,11 +1045,11 @@ vhost your_vhost {
 ffmpeg -re -i test.mp4 -c copy -f flv rtmp://192.168.1.107:1935/live
 
 #推流摄像头
-ffmpeg -f video4linux2 -i /dev/video0 -f flv rtmp://192.168.1.107:1935/live
+ffmpeg -f video4linux2 -i /dev/video0 -f flv rtmp://192.168.1.107:1935/live/test
 
-ffmpeg -i /dev/video0 -s 640x360 -vcodec libx264 -max_delay 100 -r 20 -b:v 1000k -b:a 128k -f flv rtmp://192.168.1.107:1935/live
+ffmpeg -i /dev/video0 -s 640x360 -vcodec libx264 -max_delay 100 -r 20 -b:v 1000k -b:a 128k -f flv rtmp://192.168.1.107:1935/live/test
 
-ffmpeg -f video4linux2 -framerate 30 -video_size 320x240 -i /dev/video0 -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -video_size 320x240 -threads 0 -f flv rtmp://192.168.1.107:1935/live
+ffmpeg -f video4linux2 -framerate 30 -video_size 320x240 -i /dev/video0 -vcodec libx264 -preset ultrafast -pix_fmt yuv420p -video_size 320x240 -threads 0 -f flv rtmp://192.168.1.107:1935/live/test
 
 #保存推流视频
 ffmpeg -i rtmp://192.168.1.107:1935/live -c copy 文件名.flv
@@ -1125,20 +1202,35 @@ http://playertest.longtailvideo.com/adaptive/bipbop/gear4/prog_index.m3u8
 下载解压成功后进入文件夹`$(pwd)/mjpg-streamer-master/mjpg-streamer-experimental`编译：
 
 ```
-sudo apt-get install cmake libjpeg8-dev
+sudo apt-get install libjpeg8-dev -y
 ```
-安装`libjpeg8-dev`失败改用下面的安装`libjpeg62-turbo-dev`
+
+报错提示：
+```sh
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+Package libjpeg8-dev is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+However the following packages replace it:
+  libjpeg62-turbo-dev:armhf libjpeg62-turbo-dev
+
+E: Package 'libjpeg8-dev' has no installation candidate
 ```
-sudo apt install libjpeg62-turbo-dev
-```
-如果还是提示安装失败，根据提示使用`sudo autoremove`命令删除对应的依赖关系，可能会卸载blinker需要的python包导致使用不了，待安装完成后重新安装blinker即可
-```
-sudo apt-get install cmake
-sudo apt-get install imagemagick
+
+安装`libjpeg8-dev`失败，这可能是因为该软件包已被废弃或不包含在你配置的软件包仓库中。改用下面的安装`libjpeg62-turbo-dev:armhf`
+```sh
+sudo apt-get install libjpeg62-turbo-dev:armhf
+
+sudo apt-get install gcc g++ -y
+sudo apt-get install cmake -y
+sudo apt-get install imagemagick -y
+sudo apt-get install libjpeg-dev -y
+
 make
 sudo make install
 ```
-
 
 开启stream服务器：
 ```
@@ -1153,6 +1245,253 @@ sudo make install
 ```
 http://192.168.1.107:8081/?action=stream
 ```
+
+# libcamera-vid参数
+`libcamera-vid` 是用于在树莓派上捕捉视频的命令行工具。下面是 `libcamera-vid` 命令的各个参数的详细解释：
+
+- `--level`：指定视频编码的级别。可选值为 1.0、1.1、1.2、1.3、2.0、2.1、2.2、3.0、3.1、3.2、4.0、4.1、4.2、5.0、5.1、5.2、6.0、6.1、6.2、自动（auto）。
+- `--framerate`：指定视频的帧率。
+- `--width`：指定视频的宽度。
+- `--height`：指定视频的高度。
+- `--save-pts`：保存视频帧的时间戳到指定的文件。
+- `-o, --output`：指定输出视频文件的路径和文件名。（-o -: 指定输出到标准输出（stdout），而不是写入文件。- 表示标准输出。）标准输出流展示、管道输出给软件
+- `-t, --timeout`：指定视频的持续时间，单位为毫秒。
+- `--denoise`：指定视频降噪的级别。可选值为 auto、off、low、medium、high。
+- `-n, --no-display`：禁止显示视频捕捉的预览图像。
+
+这些参数可以根据您的需求进行调整，以获得所需的视频捕捉效果。您可以通过运行 `libcamera-vid --help` 命令来获取更详细的帮助文档和命令选项列表。
+
+标准输出和管道输出有以下区别：
+
+1. 标准输出（stdout）：标准输出是程序默认的输出目标。当程序将输出发送到标准输出时，输出内容会直接显示在终端窗口上。标准输出通常用于向用户显示程序的结果或信息。
+
+2. 管道输出（Pipe）：管道输出是一种将一个程序的输出连接到另一个程序的输入的方法。通过使用管道符号 `|`，可以将一个程序的输出直接传递给另一个程序，作为后者的输入。这样可以实现多个程序之间的数据传递和处理。
+
+区别在于输出的目标和用途：
+
+- 标准输出主要用于直接显示程序的输出内容在终端窗口上，以供用户查看和交互。
+- 管道输出主要用于将一个程序的输出作为另一个程序的输入进行处理，实现程序之间的数据传递和协作。
+
+在命令行中，可以使用重定向符号 `>` 将标准输出重定向到文件中，从而将输出保存到文件中而非显示在终端窗口上。而管道符号 `|` 则用于将一个程序的输出传递给另一个程序，实现数据的流动和处理。
+
+
+# Go开发MJPG-Streamer流媒体服务器
+
+MJPG-Streamer是一个基于HTTP协议的流媒体服务器，它使用MJPEG（Motion JPEG）格式来传输视频流。以下是MJPG-Streamer的基本协议规格：
+
+1. HTTP请求：客户端通过HTTP GET请求来获取视频流数据。请求的URL通常包含服务器的IP地址、端口号和特定的路径。
+
+2. 响应头：服务器会返回HTTP响应头，其中包含一些常见的响应头字段，如Content-Type、Content-Length和Connection。Content-Type字段通常设置为"multipart/x-mixed-replace"，表示多部分数据替换。Content-Length字段表示响应体的长度。
+
+3. 响应体：响应体是一个由多个JPEG图像帧组成的数据流。每个JPEG图像帧都以0xFFD8作为起始标记（SOI，Start of Image），以0xFFD9作为结束标记（EOI，End of Image）。每个图像帧之间通过分隔符0xFFD8来分隔。
+
+4. 分块传输：MJPEG流使用分块传输（Chunked Transfer）方式进行数据传输。每个图像帧被分成多个分块，每个分块都以十六进制的长度值开头，后面跟着实际的数据。
+
+5. 帧间延迟：由于MJPEG流是一系列的JPEG图像帧，每个帧都是独立的图像，因此可能存在帧间延迟。这意味着客户端接收到的帧可能不是实时的，而是有一定延迟的。
+
+请注意，以上是MJPG-Streamer的基本协议规格，具体的实现细节和配置可能会因不同的版本和设置而有所差异。建议参考MJPG-Streamer的官方文档或用户手册，以获取更详细的协议规格和配置说明。
+
+浏览器输入:`http://192.168.1.106:9091/stream`访问，即可打开。
+```go
+package main
+
+import (
+	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"time"
+)
+
+func main() {
+	// 设置HTTP路由
+	http.HandleFunc("/stream", streamHandler)
+
+	// 启动HTTP服务器
+	err := http.ListenAndServe(":9091", nil)
+	if err != nil {
+		fmt.Println("Failed to start server:", err)
+		return
+	}
+}
+
+func streamHandler(w http.ResponseWriter, req *http.Request) {
+	// 设置响应头
+	w.Header().Set("Content-Type", "multipart/x-mixed-replace;boundary=boundarydonotcross")
+
+	// 无限循环，持续发送图像流
+	for {
+		// 读取图像数据
+		imageData, err := readImage()
+		if err != nil {
+			fmt.Println("Failed to read image:", err)
+			return
+		}
+
+		// 写入分隔符和图像数据
+		fmt.Fprintf(w, "--boundarydonotcross\r\n")
+		fmt.Fprintf(w, "Content-Type: image/jpeg\r\n")
+		fmt.Fprintf(w, "Content-Length: %d\r\n\r\n", len(imageData))
+		w.Write(imageData)
+
+		// 强制刷新缓冲区，将数据发送到客户端
+		flusher, ok := w.(http.Flusher)
+		if !ok {
+			fmt.Println("Flusher not supported")
+			return
+		}
+		flusher.Flush()
+
+		// 暂停一段时间
+		time.Sleep(100 * time.Millisecond)
+	}
+}
+
+// 读取图像数据（示例函数，需要根据实际情况实现）
+func readImage() ([]byte, error) {
+	// 从文件系统中打开图像文件
+	file, err := os.Open("test.jpg")
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	// 读取图像数据到字节切片
+	imageData, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	return imageData, nil
+}
+
+```
+
+
+# 以下是使用 Go 语言封装一个 IP 数据报的示例代码：
+
+```go
+package main
+
+import (
+	"fmt"
+	"log"
+	"net"
+)
+
+func main() {
+	// 目标 IP 地址和端口
+	destIP := net.ParseIP("192.168.1.100")
+	destPort := 8080
+
+	// 源 IP 地址
+	srcIP := net.ParseIP("192.168.1.103")
+
+	// 创建 IP 数据报
+	ip := &net.IPHeader{
+		Version:  4,              // IPv4
+		Len:      20,             // IP 头部长度
+		TotalLen: 20 + 8,         // IP 数据报总长度
+		TTL:      64,             // 生存时间
+		Protocol: net.IPProtocolUDP, // 上层协议为 UDP
+		Src:      srcIP.To4(),    // 源 IP 地址
+		Dst:      destIP.To4(),   // 目标 IP 地址
+	}
+
+	// 封装 UDP 数据报
+	udp := &net.UDPHeader{
+		SrcPort: 12345, // 源端口号
+		DstPort: uint16(destPort), // 目标端口号
+		Len:     8,     // UDP 头部长度
+	}
+
+	// 创建连接
+	conn, err := net.DialIP("ip4:udp", nil, &net.IPAddr{IP: destIP})
+	if err != nil {
+		log.Fatal("Error creating connection:", err)
+	}
+	defer conn.Close()
+
+	// 构建 IP 数据报头部字节流
+	ipBytes, err := ip.Marshal()
+	if err != nil {
+		log.Fatal("Error marshaling IP header:", err)
+	}
+
+	// 构建 UDP 数据报头部字节流
+	udpBytes, err := udp.Marshal()
+	if err != nil {
+		log.Fatal("Error marshaling UDP header:", err)
+	}
+
+	// 构建数据报
+	packet := append(ipBytes, udpBytes...)
+
+	// 发送数据报
+	_, err = conn.Write(packet)
+	if err != nil {
+		log.Fatal("Error sending packet:", err)
+	}
+
+	fmt.Println("Packet sent")
+}
+```
+
+上述代码创建了一个 IP 数据报，并使用 UDP 协议封装了一个 UDP 数据报。然后，它使用 `DialIP` 建立一个 IP 层连接，并将封装后的数据报发送到目标 IP 地址和端口。请注意，源 IP 地址和目标 IP 地址可以根据实际情况进行修改。
+
+该示例仅封装了 IP 数据报和 UDP 数据报的头部信息，并发送了一个空的 UDP 数据报。实际应用中，您可以根据需要修改数据报的内容和长度。
+
+
+# 在 Debian 系统中，有几种方式可以设置开机启动：
+
+1. 使用 `/etc/init.d` 脚本：
+   在 `/etc/init.d` 目录中创建启动脚本，并使用 `update-rc.d` 命令将其添加到启动项中。这是传统的方法，适用于较早的 Debian 版本。
+
+2. 使用 `systemd`：
+   在较新的 Debian 版本中，使用 `systemd` 作为默认的 init 系统。你可以创建一个 `*.service` 文件来描述你的服务，并使用 `systemctl` 命令管理服务的启动和停止。`systemd` 提供了更强大和灵活的服务管理功能。
+
+下面是使用 `systemd` 设置开机启动的示例步骤：
+
+1. 创建一个 `*.service` 文件，例如 `myservice.service`，并将其放置在 `/etc/systemd/system` 目录中。示例文件内容如下：
+
+   ```
+   [Unit]
+   Description=My Service
+   After=network.target
+
+   [Service]
+   ExecStart=/path/to/my-service-executable
+   Restart=always
+
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+   将 `ExecStart` 替换为你的服务实际的可执行文件路径。
+
+2. 运行以下命令以重新加载 `systemd` 配置：
+
+   ```
+   sudo systemctl daemon-reload
+   ```
+
+3. 启用服务以在启动时自动启动：
+
+   ```
+   sudo systemctl enable myservice
+   ```
+
+4. 启动服务：
+
+   ```
+   sudo systemctl start myservice
+   ```
+
+现在，你的服务将在系统启动时自动启动。你还可以使用 `systemctl` 命令来停止、重启或禁用服务。
+
+请注意，如果你使用较旧的 Debian 版本，可能仍需要使用 `/etc/init.d` 脚本方法进行设置。对于较新的 Debian 版本，请优先考虑使用 `systemd` 方法。
+
+
 
 # 文章内跳转
 
