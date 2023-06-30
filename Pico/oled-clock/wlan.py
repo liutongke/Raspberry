@@ -1,8 +1,9 @@
 import network
-from utime import sleep
-import led
-import config
 import ntptime
+from utime import sleep
+
+import config
+import led
 
 
 # 无线网连接
@@ -25,7 +26,7 @@ class Wlan:
             led.Led().blingbling()
         print('IP: ', self.wlan.ifconfig()[0])  # 显示Pico W开发板IP地址
         # print("wifi", self.wlan.isconnected())
-        ntptime.host = 'time.windows.com'
+        ntptime.host = 'time.apple.com'
         ntptime.settime()
         # self.ap_open()
         return True
