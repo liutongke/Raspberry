@@ -9,16 +9,20 @@ RUN mkdir -p /var/www/html/hls
 #设置时区
 ENV TZ=Asia/Shanghai
 RUN apt-get update \
-    && apt-get install build-essential libpcre3 libpcre3-dev libssl-dev unzip -y
+    && apt-get install build-essential libpcre3 libpcre3-dev libssl-dev wget unzip -y
 
-
-#RUN wget http://nginx.org/download/nginx-1.24.0.tar.gz
-#RUN wget https://github.com/arut/nginx-rtmp-module/archive/master.zip
-ADD nginx-1.24.0.tar.gz /usr/local/src
-ADD nginx-rtmp-module-master.zip  /usr/local/src
-
+#下载安装
 WORKDIR /usr/local/src
-RUN unzip nginx-rtmp-module-master.zip
+RUN wget http://nginx.org/download/nginx-1.24.0.tar.gz
+RUN wget https://github.com/arut/nginx-rtmp-module/archive/master.zip
+RUN unzip master.zip
+RUN tar -zxvf nginx-1.24.0.tar.gz
+
+#从目录复制安装
+#ADD nginx-1.24.0.tar.gz /usr/local/src
+#ADD nginx-rtmp-module-master.zip  /usr/local/src
+#WORKDIR /usr/local/src
+#RUN unzip nginx-rtmp-module-master.zip
 
 WORKDIR /usr/local/src/nginx-1.24.0
 

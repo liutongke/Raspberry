@@ -10,6 +10,4 @@ docker run --name nginx-rtmp-v1 -d -p 9001:1935 -p 80:80 --restart always -v C:\
 
 m3u8播放地址：http://192.168.1.106/hls/haha/index.m3u8
 
-srs直播：
-docker run --name srs4-v1 -itd -p 1935:1935 -p 1985:1985 -p 8080:8080 --restart always \
-    registry.cn-hangzhou.aliyuncs.com/ossrs/srs:4 ./objs/srs -c conf/docker.conf
+windwos系统不建议将`/var/www/html/hls`目录与宿主机绑定，因为文件系统转换原因，会导致系统速度减慢，拉流变卡顿
